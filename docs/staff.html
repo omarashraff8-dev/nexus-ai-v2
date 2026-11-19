@@ -89,8 +89,8 @@
           </div>
           <div class="table-wrap">
             <table class="data">
-              <thead><tr><th>رقم الشكوى</th><th>الطالب</th><th>العنوان / النوع</th><th>الأولوية</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead>
-              <tbody id="complaintsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted)">جارِ التحميل...</td></tr></tbody>
+              <thead><tr><th>رقم الشكوى</th><th>الطالب</th><th>العنوان / النوع</th><th>الأولوية</th><th>الحالة</th><th>المسؤول الحالي</th><th>التاريخ</th><th></th></tr></thead>
+              <tbody id="complaintsTableBody"><tr><td colspan="8" style="text-align:center;color:var(--muted)">جارِ التحميل...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -183,12 +183,13 @@
           <p id="modalDetails" style="font-size:.87rem;white-space:pre-line;background:#F8FBFF;border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem"></p>
           <div id="modalAttachment" style="font-size:.8rem"></div>
           <div><h4 style="font-size:.82rem;color:var(--navy-800);margin-bottom:.3rem">سجل التحديثات</h4><ul class="timeline" id="modalTimeline"></ul></div>
+          <div><h4 style="font-size:.82rem;color:var(--navy-800);margin-bottom:.3rem">سجل التحويلات</h4><div id="modalTransfers" style="font-size:.78rem;color:var(--muted)">لا توجد تحويلات بعد.</div></div>
           <!-- إجراءات -->
           <div class="status-actions">
             <button class="btn btn-outline btn-sm" data-status="in_progress" style="border-color:#F59E0B;color:#B45309">⏳ قيد المراجعة</button>
             <button class="btn btn-ok btn-sm" data-status="resolved">✓ تم الحل</button>
             <button class="btn btn-danger btn-sm" data-status="rejected">رفض</button>
-            <button class="btn btn-outline btn-sm" id="assignToMeBtn">🙋 تولّيها</button>
+            <button class="btn btn-outline btn-sm" id="assignToMeBtn">✅ استلام الشكوى</button>
             <button class="btn btn-outline btn-sm" id="requestInfoBtn">❓ طلب معلومات</button>
           </div>
           <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
@@ -196,8 +197,7 @@
             <select id="modalPriority" style="border:1.5px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.8rem" aria-label="تعديل الأولوية يدويًا">
               <option value="low">منخفضة</option><option value="medium">متوسطة</option><option value="high">مرتفعة</option><option value="urgent">عاجلة</option><option value="critical">حرجة</option>
             </select>
-            <select id="transferDept" style="border:1.5px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.8rem" aria-label="تحويل إلى قسم"></select>
-            <button class="btn btn-outline btn-sm" id="transferBtn">↩ تحويل</button>
+            <button class="btn btn-outline btn-sm" id="transferBtn" title="تحويل الشكوى لموظف مختص">↩ تحويل لموظف</button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;min-height:280px">

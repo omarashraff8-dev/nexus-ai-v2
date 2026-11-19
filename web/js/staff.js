@@ -23,7 +23,9 @@ let searchTimer = null;
     if (s === 'lostfound') loadStaffLostFound();
   });
 
-  await Promise.all([loadStats(), loadUrgent(), loadTransferDepartments()]);
+  await Promise.all([loadStats(), loadUrgent()]);
+  // تحديث دوري للإشعارات أثناء فتح قسم الإشعارات (وصول فوري للتحويلات)
+  setInterval(() => { const active = document.querySelector('.page-section.active'); if (active && active.id === 'section-notifs') loadNotifications(); }, 10000);
 })();
 
 // ---------- الرئيسية ----------
@@ -65,12 +67,12 @@ function currentFilters() {
 }
 async function loadComplaints() {
   const tbody = $('#complaintsTableBody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">جارِ التحميل...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted)">جارِ التحميل...</td></tr>';
   const qs = currentFilters();
   const r = await api('/api/complaints' + (qs ? '?' + qs : ''));
-  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--danger)">${escapeHtml(r.error)}</td></tr>`; return; }
+  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="8" style="color:var(--danger)">${escapeHtml(r.error)}</td></tr>`; return; }
   $('#resultCount').textContent = `${r.data.length} شكوى`;
-  if (!r.data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">لا توجد شكاوى بهذه الفلاتر.</td></tr>'; return; }
+  if (!r.data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">لا توجد شكاوى بهذه الفلاتر.</td></tr>'; return; }
   tbody.innerHTML = r.data.map(c => `
     <tr>
       <td><span class="ticket-no">${escapeHtml(c.ticket_no)}</span></td>
@@ -78,6 +80,7 @@ async function loadComplaints() {
       <td style="max-width:280px"><b style="font-size:.83rem">${escapeHtml(c.title.slice(0, 70))}${c.title.length > 70 ? '…' : ''}</b><br><span style="font-size:.68rem;color:var(--muted)">${escapeHtml(c.type_name || '—')}</span></td>
       <td>${priorityBadge(c.priority)}</td>
       <td>${statusBadge(c.status)} ${closureTag(c)}</td>
+      <td style="font-size:.76rem;max-width:130px">${escapeHtml(c.assigned_name || 'غير مسندة')}<br><span style="font-size:.68rem;color:var(--muted)">${escapeHtml(c.department_name || '')}</span></td>
       <td style="white-space:nowrap;font-size:.76rem">${fmtDay(c.created_at)}</td>
       <td><button class="btn btn-primary btn-sm" data-open="${c.id}">فتح</button></td>
     </tr>`).join('');
@@ -104,9 +107,9 @@ async function openComplaint(id) {
   renderModal(r.data);
 }
 
-function renderModal({ complaint: c, messages, updates }) {
+function renderModal({ complaint: c, messages, updates, transfers }) {
   $('#modalTitle').textContent = `${c.ticket_no} — ${c.title}`;
-  $('#modalHeadInfo').innerHTML = `<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">${statusBadge(c.status)} ${priorityBadge(c.priority)}${closureTag(c)}<span style="font-size:.75rem;color:var(--muted)">القسم: <b>${escapeHtml(c.department_name)}</b>${c.assigned_name ? ' · مسندة إلى: <b>' + escapeHtml(c.assigned_name) + '</b>' : ' · غير مسندة'} · أُنشئت ${fmtDate(c.created_at)}</span></div>`;
+  $('#modalHeadInfo').innerHTML = `<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">${statusBadge(c.status)} ${priorityBadge(c.priority)}${closureTag(c)}<span style="font-size:.75rem;color:var(--muted)">القسم: <b>${escapeHtml(c.department_name)}</b>${c.assigned_name ? ' · المسؤول: <b>' + escapeHtml(c.assigned_name) + '</b>' : ' · غير مسندة'} · أُنشئت ${fmtDate(c.created_at)}</span></div>`;
   renderStepper($('#modalStepper'), c, updates);
   renderEmployeeBanner(c);
   $('#mdStudent').textContent = c.student_name;
@@ -132,6 +135,16 @@ function renderModal({ complaint: c, messages, updates }) {
 
   $('#modalTimeline').innerHTML = updates.map(u => `
     <li><div class="t-body"><b>${escapeHtml(actionLabel(u.action))}${u.user_name ? ' — ' + escapeHtml(u.user_name) : ''}</b>${u.details ? `<span>${escapeHtml(u.details)}</span>` : ''}</div><time>${fmtDay(u.created_at)}</time></li>`).join('');
+
+  const transfersBox = $('#modalTransfers');
+  if (transfersBox) {
+    transfersBox.innerHTML = (transfers || []).length ? transfers.map(t => `
+      <div style="border:1px solid var(--line);border-radius:8px;padding:.4rem .55rem;margin-bottom:.35rem;background:#F8FBFF">
+        <b>نقل:</b> ${escapeHtml(t.from_name || '—')} · <b>كان مسندًا لـ:</b> ${escapeHtml(t.previous_name || 'غير مسندة')} · <b>إلى:</b> <b>${escapeHtml(t.to_name || '—')}</b>
+        <span style="color:var(--muted)">· ${escapeHtml(t.department_name || '')} · ${fmtDate(t.created_at)}</span>
+        ${t.reason ? `<div style="margin-top:.2rem">🔒 ${escapeHtml(t.reason)}</div>` : ''}
+      </div>`).join('') : 'لا توجد تحويلات بعد.';
+  }
 
   const chat = $('#modalChat');
   chat.innerHTML = messages.length ? messages.map(m => {
@@ -177,7 +190,7 @@ function renderEmployeeBanner(c) {
   }
 }
 
-function actionLabel(a) { return { created: 'تم إنشاء الشكوى', status: 'تغيير الحالة', assigned: 'إسناد', transfer: 'تحويل لقسم', request_info: 'طلب معلومات', priority: 'تعديل الأولوية يدويًا', closure_confirmed: 'الطالب أكّد الحل', reopened: 'الشكوى اُعيد فتحها', request_confirmation: 'الشؤون طلبت تأكيد الحل', employee_confirmed: 'الموظف أكّد الحل', employee_not_confirmed: 'الموظف: لسه مش محلولة', rating_reset: 'تم مسح التقييم بمعرفة الإدارة' }[a] || a; }
+function actionLabel(a) { return { created: 'تم إنشاء الشكوى', status: 'تغيير الحالة', assigned: 'إسناد', transfer: 'تحويل لموظف', accepted: 'استلام الموظف للشكوى', request_info: 'طلب معلومات', priority: 'تعديل الأولوية يدويًا', closure_confirmed: 'الطالب أكّد الحل', reopened: 'الشكوى اُعيد فتحها', request_confirmation: 'الشؤون طلبت تأكيد الحل', employee_confirmed: 'الموظف أكّد الحل', employee_not_confirmed: 'الموظف: لسه مش محلولة', rating_reset: 'تم مسح التقييم بمعرفة الإدارة' }[a] || a; }
 
 async function reloadModal() {
   if (!currentComplaintId) return;
@@ -196,12 +209,12 @@ document.querySelectorAll('.status-actions [data-status]').forEach(btn => btn.ad
   toast('تم تحديث حالة الشكوى ✓'); reloadModal();
 }));
 
-// تولّي الشكوى
+// استلام الشكوى وتولّي المسؤولية
 $('#assignToMeBtn').addEventListener('click', async () => {
   if (!currentComplaintId) return;
-  const r = await api(`/api/complaints/${currentComplaintId}/assign`, { method: 'POST', body: {} });
+  const r = await api(`/api/complaints/${currentComplaintId}/accept`, { method: 'POST', body: {} });
   if (!r.ok) return toast(r.error, 'err');
-  toast('تم إسناد الشكوى إليك ✓'); reloadModal();
+  toast('استلمت الشكوى وأصبحت المسؤول عنها ✓'); reloadModal();
 });
 
 // طلب معلومات إضافية
@@ -214,21 +227,11 @@ $('#requestInfoBtn').addEventListener('click', async () => {
   toast('تم إرسال طلب المعلومات للطالب ✓'); reloadModal();
 });
 
-// التحويل لقسم آخر
-function loadTransferDepartments() {
-  api('/api/departments').then(r => {
-    if (!r.ok) return;
-    $('#transferDept').innerHTML = '<option value="">تحويل إلى قسم...</option>' + r.data.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
-  });
-}
-$('#transferBtn').addEventListener('click', async () => {
-  const deptId = $('#transferDept').value;
-  if (!deptId) return toast('اختر القسم المستهدف', 'err');
+// تحويل الشكوى لموظف مختص (مدير وموظفون)
+$('#transferBtn').addEventListener('click', () => {
   if (!currentComplaintId) return;
-  const reason = prompt('سبب التحويل (اختياري):', '') || '';
-  const r = await api(`/api/complaints/${currentComplaintId}/transfer`, { method: 'POST', body: { department_id: Number(deptId), reason } });
-  if (!r.ok) return toast(r.error, 'err');
-  toast('تم تحويل الشكوى للقسم المختص ✓'); reloadModal();
+  const ticket = ($('#modalTitle').textContent || '').split(' — ')[0];
+  window.NexusTransfer.open(currentComplaintId, ticket, () => reloadModal());
 });
 
 // إرسال رد / ملاحظة داخلية

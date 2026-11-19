@@ -257,7 +257,7 @@ function renderConfirmBanner(c) {
   };
 }
 
-function actionLabel(a) { return { created: 'تم إنشاء الشكوى', status: 'تغيير الحالة', assigned: 'إسناد', transfer: 'تحويل لقسم', request_info: 'طلب معلومات', priority: 'تعديل الأولوية يدويًا', closure_confirmed: 'الطالب أكّد الحل', reopened: 'الشكوى اُعيد فتحها', request_confirmation: 'الشؤون طلبت تأكيد الحل', employee_confirmed: 'الموظف أكّد الحل', employee_not_confirmed: 'الموظف: لسه مش محلولة', rating_reset: 'تم مسح التقييم بمعرفة الإدارة' }[a] || a; }
+function actionLabel(a) { return { created: 'تم إنشاء الشكوى', status: 'تغيير الحالة', assigned: 'إسناد', transfer: 'تحويل لموظف مختص', accepted: 'استلام الموظف للشكوى', request_info: 'طلب معلومات', priority: 'تعديل الأولوية يدويًا', closure_confirmed: 'الطالب أكّد الحل', reopened: 'الشكوى اُعيد فتحها', request_confirmation: 'الشؤون طلبت تأكيد الحل', employee_confirmed: 'الموظف أكّد الحل', employee_not_confirmed: 'الموظف: لسه مش محلولة', rating_reset: 'تم مسح التقييم بمعرفة الإدارة' }[a] || a; }
 
 $('#modalMessageForm').addEventListener('submit', async e => {
   e.preventDefault();

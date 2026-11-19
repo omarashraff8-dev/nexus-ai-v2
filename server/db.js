@@ -194,6 +194,19 @@ function initDb() {
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- سجل التحويلات الكامل: من نقل؟ لمن؟ كان مسند لمين قبل؟ متى؟ وليه؟
+  CREATE TABLE IF NOT EXISTS complaint_transfers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    complaint_id INTEGER NOT NULL REFERENCES complaints(id) ON DELETE CASCADE,
+    from_user_id INTEGER REFERENCES users(id),
+    to_user_id INTEGER REFERENCES users(id),
+    previous_assigned_to INTEGER REFERENCES users(id),
+    department_id INTEGER REFERENCES departments(id),
+    reason TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_transfers_complaint ON complaint_transfers(complaint_id);
+
   CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     complaint_id INTEGER NOT NULL REFERENCES complaints(id) ON DELETE CASCADE,

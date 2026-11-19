@@ -24,6 +24,8 @@ const DEPT_COLORS = ['#2563EB', '#38BDF8', '#7C3AED', '#F59E0B', '#16A34A', '#DC
 
   await Promise.all([loadInsights(), loadDepartmentSelects(), loadDeptRanking()]);
   buildInlineForms();
+  // تحديث دوري للإشعارات أثناء فتح قسم الإشعارات
+  setInterval(() => { const active = document.querySelector('.page-section.active'); if (active && active.id === 'section-notifs') loadNotifications(); }, 10000);
 })();
 
 // =====================================================
@@ -288,10 +290,11 @@ async function loadAllComplaints() {
       <td>${priorityBadge(c.priority)}</td><td>${statusBadge(c.status)} ${closureTag(c)}</td>
       <td style="font-size:.78rem">${escapeHtml(c.assigned_name || 'غير مسندة')}</td>
       <td style="font-size:.74rem;white-space:nowrap">${fmtDay(c.created_at)}</td>
-      <td style="white-space:nowrap"><button class="btn btn-outline btn-sm" data-view="${c.id}">عرض</button> <button class="btn btn-primary btn-sm" data-assign="${c.id}" data-title="${escapeHtml(c.ticket_no)}">إسناد</button></td>
+      <td style="white-space:nowrap"><button class="btn btn-outline btn-sm" data-view="${c.id}">عرض</button> <button class="btn btn-primary btn-sm" data-assign="${c.id}" data-title="${escapeHtml(c.ticket_no)}">إسناد</button> <button class="btn btn-outline btn-sm" data-transfer="${c.id}" data-title="${escapeHtml(c.ticket_no)}" title="تحويل لموظف مختص">↩ تحويل</button></td>
     </tr>`).join('');
   tbody.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => openViewComplaint(Number(b.dataset.view))));
   tbody.querySelectorAll('[data-assign]').forEach(b => b.addEventListener('click', () => openAssignModal(Number(b.dataset.assign), b.dataset.title)));
+  tbody.querySelectorAll('[data-transfer]').forEach(b => b.addEventListener('click', () => { viewModal.classList.remove('open'); window.NexusTransfer.open(Number(b.dataset.transfer), b.dataset.title, () => loadAllComplaints()); }));
 }
 $('#aSearch').addEventListener('input', () => { clearTimeout(adminSearchTimer); adminSearchTimer = setTimeout(loadAllComplaints, 300); });
 ['aDept', 'aStatus', 'aPriority', 'aFrom', 'aTo'].forEach(id => $('#' + id).addEventListener('change', loadAllComplaints));
@@ -353,12 +356,12 @@ async function openViewComplaint(id) {
   $('#viewDetails').textContent = 'جارِ التحميل...';
   const r = await api(`/api/complaints/${id}`);
   if (!r.ok) { toast(r.error, 'err'); viewModal.classList.remove('open'); return; }
-  const { complaint: c, messages, updates } = r.data;
+  const { complaint: c, messages, updates, transfers } = r.data;
   $('#viewModalTitle').textContent = `${c.ticket_no} — ${c.title}`;
   $('#viewPriority').value = c.priority || 'medium';
   const resetBtn = $('#viewResetRatingBtn');
   resetBtn.style.display = c.rating ? 'inline-flex' : 'none';
-  $('#viewHeadInfo').innerHTML = `<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">${statusBadge(c.status)} ${priorityBadge(c.priority)}${closureTag(c)}<span style="font-size:.75rem;color:var(--muted)">الطالب: <b>${escapeHtml(c.student_name)}</b> (${escapeHtml(c.student_code || '—')}) · القسم: <b>${escapeHtml(c.department_name)}</b> · ${fmtDate(c.created_at)}</span></div>`;
+  $('#viewHeadInfo').innerHTML = `<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">${statusBadge(c.status)} ${priorityBadge(c.priority)}${closureTag(c)}<span style="font-size:.75rem;color:var(--muted)">الطالب: <b>${escapeHtml(c.student_name)}</b> (${escapeHtml(c.student_code || '—')}) · القسم: <b>${escapeHtml(c.department_name)}</b> · المسؤول: <b>${escapeHtml(c.assigned_name || 'غير مسندة')}</b> · ${fmtDate(c.created_at)}</span></div>`;
   renderAdminConfirmBanner(c);
   $('#viewDetails').textContent = c.details;
   const aiBox = $('#viewAiBox');
@@ -366,8 +369,21 @@ async function openViewComplaint(id) {
   $('#viewAttachment').innerHTML = c.attachment ? `<a class="link" href="${escapeHtml(c.attachment)}" target="_blank" rel="noopener">📎 عرض المرفق</a>` : '';
   $('#viewChat').innerHTML = messages.length ? messages.map(m => `<div class="msg ${m.is_internal ? 'internal' : m.sender_role === 'student' ? 'them' : 'me'}"><div class="meta"><span>${m.is_internal ? '🔒 ' : ''}${escapeHtml(m.sender_name)}</span><span>${fmtDate(m.created_at)}</span></div>${escapeHtml(m.body)}</div>`).join('') : '<p style="color:var(--muted);font-size:.82rem;text-align:center">لا توجد رسائل.</p>';
   $('#viewTimeline').innerHTML = updates.map(u => `<li><div class="t-body"><b>${escapeHtml(u.action)}</b>${u.details ? `<span>${escapeHtml(u.details)}</span>` : ''}</div><time>${fmtDay(u.created_at)}</time></li>`).join('');
+  const tb = $('#viewTransfers');
+  if (tb) tb.innerHTML = (transfers || []).length ? transfers.map(t => `
+    <div style="border:1px solid var(--line);border-radius:8px;padding:.4rem .55rem;margin-top:.35rem;background:#F8FBFF;font-size:.78rem">
+      <b>نقل:</b> ${escapeHtml(t.from_name || '—')} · <b>كان مسندًا لـ:</b> ${escapeHtml(t.previous_name || 'غير مسندة')} · <b>إلى:</b> <b>${escapeHtml(t.to_name || '—')}</b>
+      <span style="color:var(--muted)">· ${escapeHtml(t.department_name || '')} · ${fmtDate(t.created_at)}</span>
+      ${t.reason ? `<div style="margin-top:.2rem">🔒 ${escapeHtml(t.reason)}</div>` : ''}
+    </div>`).join('') : '<span style="color:var(--muted);font-size:.78rem">لا توجد تحويلات بعد.</span>';
 }
 $('#viewAssignBtn').addEventListener('click', () => { viewModal.classList.remove('open'); if (viewComplaintId) openAssignModal(viewComplaintId, 'NX-...'); });
+$('#viewTransferBtn').addEventListener('click', () => {
+  if (!viewComplaintId) return;
+  const ticket = ( $('#viewModalTitle').textContent || '' ).split(' — ')[0];
+  viewModal.classList.remove('open');
+  window.NexusTransfer.open(viewComplaintId, ticket, () => openViewComplaint(viewComplaintId));
+});
 $('#viewResetRatingBtn').addEventListener('click', async () => {
   if (!viewComplaintId) return;
   if (!confirm('مسح تقييم الطالب نهائيًا؟ (تصحيح إداري — الطالب يقدر يقيّم تاني)')) return;

@@ -180,13 +180,18 @@
     ];
     // الشكاوى المحلولة + المقيّمة تعتبر مغلقة تلقائيًا
     for (const c of complaints) { if (c.rating && !c.closure_status) c.closure_status = 'confirmed'; }
-    return { meta: { nextComplaint: cid + 1, nextRow: 1000 }, departments, complaint_types, users, complaints, complaint_updates, messages, notifications, ai_conversations: [], knowledge_documents, reports: [], timetable, exams, grades, fees, attendance_stats, attendance_sessions: [], attendance_records: [], announcements, lost_found, lost_found_contacts: [], document_analyses: [] };
+    return { meta: { nextComplaint: cid + 1, nextRow: 1000 }, departments, complaint_types, users, complaints, complaint_updates, complaint_transfers: [], messages, notifications, ai_conversations: [], knowledge_documents, reports: [], timetable, exams, grades, fees, attendance_stats, attendance_sessions: [], attendance_records: [], announcements, lost_found, lost_found_contacts: [], document_analyses: [] };
   }
 
   function loadDb() {
     try {
       const raw = localStorage.getItem(LS);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // ترقية نسخة قديمة من الديمو بدون فقد الشكاوى الموجودة
+        if (!Array.isArray(parsed.complaint_transfers)) { parsed.complaint_transfers = []; saveDb(parsed); }
+        return parsed;
+      }
     } catch (e) { /* corrupted → reseed */ }
     const seed = buildSeed();
     saveDb(seed);
@@ -215,7 +220,15 @@
     const u = id ? findUser(id) : null;
     return u && u.active ? u : null;
   };
-  const canSeeComplaint = (user, c) => !c ? false : user.role === 'admin' ? true : user.role === 'student' ? c.student_id === user.id : (c.department_id === user.department_id || c.assigned_to === user.id);
+  // المدير وكل الموظفين يشوفوا كل الشكاوى — المسؤولية تُحدد بالإسناد لا بالقسم
+  const canSeeComplaint = (user, c) => !c ? false : user.role === 'student' ? c.student_id === user.id : (user.role === 'admin' || user.role === 'staff');
+  const loadTransfers = cid => DB.complaint_transfers.filter(t => t.complaint_id === cid)
+    .map(t => ({ ...t,
+      from_name: findUser(t.from_user_id)?.name || null,
+      to_name: findUser(t.to_user_id)?.name || null,
+      previous_name: t.previous_assigned_to ? (findUser(t.previous_assigned_to)?.name || null) : null,
+      department_name: (DB.departments.find(d => d.id === t.department_id) || {}).name || null }))
+    .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || a.id - b.id);
   const loadComplaint = id => {
     const c = DB.complaints.find(x => x.id === id);
     if (!c) return null;
@@ -625,6 +638,12 @@
     }
 
     // ===== Lookups =====
+    if (path === '/api/users/employees' && method === 'GET') {
+      const u = sessionUser(); if (!u || (u.role !== 'staff' && u.role !== 'admin')) return fail(403, 'ليس لديك صلاحية لهذا الإجراء');
+      const rows = DB.users.filter(x => (x.role === 'staff' || x.role === 'admin') && x.active)
+        .sort((a, b) => (a.department_id || 99) - (b.department_id || 99) || String(a.name).localeCompare(String(b.name)));
+      return ok(rows.map(publicUser));
+    }
     if (path === '/api/departments' && method === 'GET') {
       const u = sessionUser(); if (!u) return fail(401, 'سجل الدخول أولًا');
       return ok(DB.departments.map(d => ({ ...d, complaints_count: DB.complaints.filter(c => c.department_id === d.id).length })));
@@ -646,7 +665,8 @@
       const u = sessionUser(); if (!u) return fail(401, 'سجل الدخول أولًا');
       if (u.role !== 'student') return fail(403, 'ليس لديك صلاحية لهذا الإجراء');
       const { title, details, type_id, department_id, priority, attachment } = body;
-      if (!title || !details || String(title).trim().length < 5 || String(details).trim().length < 10) return fail(400, 'اكتب عنوان (5 أحرف+) وتفاصيل (10 أحرف+) للشكوى');
+      // الطالب حر في كتابة الشكوى — المطلوب فقط ألا تكون فارغة
+      if (!String(title || '').trim() || !String(details || '').trim()) return fail(400, 'اكتب عنوان الشكوى وتفاصيلها');
       const cls = classifyComplaint(`${title} ${details}`);
       let deptId = Number(department_id) || cls.department_id;
       if (!DB.departments.some(d => d.id === deptId)) deptId = cls.department_id;
@@ -657,7 +677,8 @@
       const c = { id: nextId(DB.complaints), ticket_no: ticketNo, student_id: u.id, type_id: typeId, department_id: deptId, assigned_to: null, title: String(title).trim(), details: String(details).trim(), attachment: attachment || null, status: 'new', priority: finalPriority, ai_category: cls.category, ai_confidence: cls.confidence, rating: null, created_at: nowUtc(), updated_at: nowUtc(), resolved_at: null };
       DB.complaints.push(c);
       logUpdate(c.id, u.id, 'created', 'تم إنشاء الشكوى وتصنيفها تلقائيًا بواسطة NEXUS AI');
-      for (const st of DB.users.filter(x => x.role === 'staff' && x.department_id === deptId && x.active)) notify(st.id, 'شكوى جديدة وصلت لقسمه', `${ticketNo} — ${c.title}`, 'complaint', c.id);
+      const deptName = (DB.departments.find(d => d.id === deptId) || {}).name || '';
+      for (const st of DB.users.filter(x => (x.role === 'staff' || x.role === 'admin') && x.active)) notify(st.id, 'شكوى جديدة وصلت', `${ticketNo} — ${c.title} · ${deptName}`, 'complaint', c.id);
       saveDb(DB);
       return ok({ complaint: loadComplaint(c.id), ai: cls }, 201);
     }
@@ -671,7 +692,7 @@
         return { ...c, type_name: t ? t.name : null, department_name: d ? d.name : null, student_name: s ? s.name : null, student_code: s ? s.student_code : null, assigned_name: a ? a.name : null };
       });
       if (u.role === 'student') rows = rows.filter(c => c.student_id === u.id);
-      else if (u.role === 'staff') rows = rows.filter(c => c.department_id === u.department_id || c.assigned_to === u.id);
+      // المدير والموظفون يرون كل الشكاوى
       const p = query;
       if (p.status) rows = rows.filter(c => c.status === p.status);
       if (p.priority) rows = rows.filter(c => c.priority === p.priority);
@@ -692,7 +713,15 @@
       const internalAllowed = u.role !== 'student';
       const messages = DB.messages.filter(m => m.complaint_id === c.id && (internalAllowed || !m.is_internal)).map(m => ({ ...m, sender_name: findUser(m.sender_id)?.name, sender_role: findUser(m.sender_id)?.role })).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
       const updates = DB.complaint_updates.filter(x => x.complaint_id === c.id).map(x => ({ ...x, user_name: x.user_id ? findUser(x.user_id)?.name : null, user_role: x.user_id ? findUser(x.user_id)?.role : null })).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
-      return ok({ complaint: c, messages, updates });
+      return ok({ complaint: c, messages, updates, transfers: loadTransfers(c.id) });
+    }
+    const mTransfers = path.match(/^\/api\/complaints\/(\d+)\/transfers$/);
+    if (mTransfers && method === 'GET') {
+      const u = sessionUser(); if (!u) return fail(401, 'سجل الدخول أولًا');
+      const c = DB.complaints.find(x => x.id === Number(mTransfers[1]));
+      if (!c) return fail(404, 'الشكوى غير موجودة');
+      if (!canSeeComplaint(u, c)) return fail(403, 'لا تملك صلاحية مشاهدة هذه الشكوى');
+      return ok(loadTransfers(c.id));
     }
     const mStatus = path.match(/^\/api\/complaints\/(\d+)\/status$/);
     if (mStatus && method === 'POST') {
@@ -717,9 +746,7 @@
       const c = DB.complaints.find(x => x.id === Number(mAssign[1]));
       if (!c) return fail(404, 'الشكوى غير موجودة');
       if (!canSeeComplaint(u, c)) return fail(403, 'ليست ضمن نطاقك');
-      let targetId = Number(body.assigned_to);
-      if (u.role === 'staff') { if (targetId && targetId !== u.id) return fail(403, 'الموظف يمكنه الإسناد لنفسه فقط'); targetId = u.id; }
-      if (!targetId) targetId = u.id;
+      let targetId = Number(body.assigned_to) || u.id; // المدير والموظفون يستطيعون الإسناد لأي موظف
       const target = DB.users.find(x => x.id === targetId && (x.role === 'staff' || x.role === 'admin') && x.active);
       if (!target) return fail(400, 'الموظف غير موجود');
       c.assigned_to = targetId; c.updated_at = nowUtc();
@@ -735,14 +762,40 @@
       const c = DB.complaints.find(x => x.id === Number(mTransfer[1]));
       if (!c) return fail(404, 'الشكوى غير موجودة');
       if (!canSeeComplaint(u, c)) return fail(403, 'ليست ضمن نطاقك');
-      const newDept = Number(body.department_id);
+      const newAssignee = Number(body.assigned_to);
+      if (!newAssignee) return fail(400, 'اختر الموظف المسؤول عن حل المشكلة');
+      const target = DB.users.find(x => x.id === newAssignee && (x.role === 'staff' || x.role === 'admin') && x.active);
+      if (!target) return fail(400, 'الموظف غير موجود أو موقوف');
+      const newDept = Number(body.department_id) || target.department_id;
       if (!newDept || !DB.departments.some(d => d.id === newDept)) return fail(400, 'القسم غير صحيح');
-      const newAssignee = body.assigned_to ? Number(body.assigned_to) : null;
+      const cleanReason = String(body.reason || '').trim().slice(0, 1000);
+      const previousId = c.assigned_to || null;
       c.department_id = newDept; c.assigned_to = newAssignee; c.updated_at = nowUtc();
+      const rec = { id: nextId(DB.complaint_transfers), complaint_id: c.id, from_user_id: u.id, to_user_id: newAssignee, previous_assigned_to: previousId, department_id: newDept, reason: cleanReason || null, created_at: nowUtc() };
+      DB.complaint_transfers.push(rec);
       const dept = DB.departments.find(d => d.id === newDept);
-      logUpdate(c.id, u.id, 'transfer', `تم التحويل إلى قسم ${dept.name}${body.reason ? ' — السبب: ' + body.reason : ''}`);
-      for (const st of DB.users.filter(x => x.role === 'staff' && x.department_id === newDept && x.active)) notify(st.id, 'شكوى محوّلة إليكم', `${c.ticket_no} — ${c.title}`, 'complaint', c.id);
-      notify(c.student_id, 'تم تحويل شكواك للقسم المختص', `${c.ticket_no} — أصبحت لدى قسم ${dept.name}`, 'complaint', c.id);
+      const prevName = previousId ? (findUser(previousId)?.name || null) : null;
+      // السبب ملاحظة داخلية → لا تظهر للطالب
+      logUpdate(c.id, u.id, 'transfer', `تم التحويل من ${prevName || 'غير مسندة'} إلى ${target.name} — قسم ${dept.name}`);
+      notify(newAssignee, 'تم تحويل شكوى إليك 🫵', `${c.ticket_no} — ${c.title}${cleanReason ? ' — ملاحظة: ' + cleanReason : ''}`, 'complaint', c.id);
+      if (previousId && previousId !== newAssignee) notify(previousId, 'تم تحويل شكوى كانت مسندة إليك', `${c.ticket_no} — أصبحت لدى ${target.name}`, 'complaint', c.id);
+      notify(c.student_id, 'تم تحويل شكواك للموظف المختص', `${c.ticket_no} — أصبحت لدى ${target.name} في قسم ${dept.name}`, 'complaint', c.id);
+      saveDb(DB);
+      return ok({ complaint: loadComplaint(c.id), transfer: loadTransfers(c.id).find(t => t.id === rec.id) });
+    }
+    const mAccept = path.match(/^\/api\/complaints\/(\d+)\/accept$/);
+    if (mAccept && method === 'POST') {
+      const u = sessionUser(); if (!u) return fail(401, 'سجل الدخول أولًا');
+      if (u.role === 'student') return fail(403, 'ليس لديك صلاحية لهذا الإجراء');
+      const c = DB.complaints.find(x => x.id === Number(mAccept[1]));
+      if (!c) return fail(404, 'الشكوى غير موجودة');
+      if (!canSeeComplaint(u, c)) return fail(403, 'ليست ضمن نطاقك');
+      const oldStatus = c.status;
+      const status = oldStatus === 'new' ? 'in_progress' : oldStatus;
+      c.assigned_to = u.id; c.status = status; c.updated_at = nowUtc();
+      if (status !== oldStatus) logUpdate(c.id, u.id, 'status', `تم تغيير الحالة إلى: ${STATUS_LABEL[status]} (استلام الموظف)`);
+      logUpdate(c.id, u.id, 'accepted', `استلم الشكوى وأصبح المسؤول عنها: ${u.name}`);
+      notify(c.student_id, 'موظف استلم شكواك', `${c.ticket_no} — ${u.name} بقى المسؤول عنها الآن`, 'complaint', c.id);
       saveDb(DB);
       return ok({ complaint: loadComplaint(c.id) });
     }
@@ -859,7 +912,7 @@
         return ok({ total: rows.length, new: by.new || 0, in_progress: by.in_progress || 0, resolved: by.resolved || 0, rejected: by.rejected || 0, recent });
       }
       if (u.role === 'staff') {
-        const scope = DB.complaints.filter(c => c.department_id === u.department_id || c.assigned_to === u.id);
+        const scope = DB.complaints.slice(); // اللوحة تعرض كل الشكاوى + عدد المسند للموظف
         const open = scope.filter(c => c.status === 'new' || c.status === 'in_progress');
         const mine = open.filter(c => c.assigned_to === u.id).length;
         const resolvedWeek = scope.filter(c => c.status === 'resolved' && c.resolved_at && (Date.now() - parseUtc(c.resolved_at)) < 7 * 86400000).length;

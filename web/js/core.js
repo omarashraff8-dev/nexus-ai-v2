@@ -177,3 +177,96 @@ function renderStars(rating, container) {
 
 // شارة دور المستخدم بالعربية
 function roleName(role) { return { student: 'طالب', staff: 'موظف', admin: 'إدارة المعهد' }[role] || role; }
+
+// ============================================================
+//  نافذة تحويل الشكوى — مشتركة بين المدير والموظفين
+//  تختار القسم + الموظف المسؤول + ملاحظة داخلية، وتسجّل سجل تحويل كامل
+// ============================================================
+window.NexusTransfer = (function () {
+  let overlay = null;
+
+  function ensure() {
+    if (overlay) return overlay;
+    overlay = document.createElement('div');
+    overlay.id = 'nexusTransferModal';
+    overlay.className = 'modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:480px">
+        <div class="modal-head"><h3 id="ntTitle">تحويل الشكوى لموظف مختص</h3><button class="icon-btn" data-x aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        <div class="modal-body">
+          <p id="ntInfo" style="font-size:.85rem;color:var(--muted);margin-bottom:.7rem"></p>
+          <label style="display:block;font-size:.78rem;font-weight:800;margin-bottom:.3rem">القسم (اختياري — يتبع الموظف تلقائيًا)</label>
+          <select id="ntDept" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:.55rem .65rem;font-size:.88rem;margin-bottom:.7rem"><option value="">جارِ التحميل...</option></select>
+          <label style="display:block;font-size:.78rem;font-weight:800;margin-bottom:.3rem">الموظف المسؤول عن الحل *</label>
+          <select id="ntEmployee" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:.55rem .65rem;font-size:.88rem;margin-bottom:.7rem"><option value="">جارِ التحميل...</option></select>
+          <label style="display:block;font-size:.78rem;font-weight:800;margin-bottom:.3rem">ملاحظة داخلية — سبب التحويل / المطلوب من الموظف</label>
+          <textarea id="ntReason" rows="3" placeholder="اكتب سبب التحويل أو الإجراء المطلوب (لا يظهر للطالب)" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:.55rem .65rem;font-size:.88rem;resize:vertical"></textarea>
+          <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.9rem">
+            <button class="btn btn-outline" data-cancel>إلغاء</button>
+            <button class="btn btn-primary" data-confirm>↩ تحويل الشكوى</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay || e.target.closest('[data-x],[data-cancel]')) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('open')) close(); });
+    overlay.querySelector('[data-confirm]').addEventListener('click', confirm);
+    overlay.querySelector('#ntDept').addEventListener('change', fillEmployees);
+    return overlay;
+  }
+
+  let state = { id: null, employees: [], onDone: null };
+
+  function close() { if (overlay) overlay.classList.remove('open'); }
+
+  function fillEmployees() {
+    const dept = Number(overlay.querySelector('#ntDept').value) || null;
+    const sel = overlay.querySelector('#ntEmployee');
+    const list = state.employees.filter(u => !dept || u.department_id === dept);
+    sel.innerHTML = list.length
+      ? list.map(u => `<option value="${u.id}">${escapeHtml(u.name)} — ${escapeHtml(u.department_name || 'إدارة')}</option>`).join('')
+      : '<option value="">لا يوجد موظفون في هذا القسم — اختر قسمًا آخر</option>';
+  }
+
+  async function confirm() {
+    const emp = Number(overlay.querySelector('#ntEmployee').value);
+    if (!emp) { toast('اختر الموظف المسؤول عن الحل', 'err'); return; }
+    const btn = overlay.querySelector('[data-confirm]');
+    btn.disabled = true; btn.textContent = 'جارِ التحويل...';
+    const r = await api(`/api/complaints/${state.id}/transfer`, {
+      method: 'POST',
+      body: {
+        department_id: Number(overlay.querySelector('#ntDept').value) || null,
+        assigned_to: emp,
+        reason: overlay.querySelector('#ntReason').value.trim(),
+      },
+    });
+    btn.disabled = false; btn.textContent = '↩ تحويل الشكوى';
+    if (!r.ok) { toast(r.error || 'تعذر تحويل الشكوى', 'err'); return; }
+    close();
+    toast('تم تحويل الشكوى وإشعار الموظف المختص ✓');
+    if (typeof state.onDone === 'function') state.onDone(r.data);
+  }
+
+  return {
+    async open(complaintId, ticketNo, onDone) {
+      const el = ensure();
+      state = { id: complaintId, employees: [], onDone };
+      el.classList.add('open');
+      el.querySelector('#ntInfo').textContent = ticketNo ? `الشكوى ${ticketNo} — اختر الموظف الأقدر على حل المشكلة.` : 'اختر الموظف الأقدر على حل المشكلة.';
+      el.querySelector('#ntReason').value = '';
+      const dept = el.querySelector('#ntDept');
+      const emp = el.querySelector('#ntEmployee');
+      dept.innerHTML = '<option value="">كل الأقسام</option><option value="">جارِ التحميل...</option>';
+      emp.innerHTML = '<option value="">جارِ التحميل...</option>';
+      const [dr, ur] = await Promise.all([api('/api/departments'), api('/api/users/employees')]);
+      if (!el.classList.contains('open')) return;
+      dept.innerHTML = '<option value="">كل الأقسام</option>' + (dr.ok ? dr.data.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('') : '');
+      state.employees = ur.ok ? ur.data : [];
+      fillEmployees();
+    },
+    close,
+  };
+})();

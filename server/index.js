@@ -86,9 +86,18 @@ function logUpdate(complaintId, userId, action, details) {
 }
 function canSeeComplaint(user, c) {
   if (!c) return false;
-  if (user.role === 'admin') return true;
   if (user.role === 'student') return c.student_id === user.id;
-  return c.department_id === user.department_id || c.assigned_to === user.id; // staff
+  // المدير وكل الموظفين يشوفوا كل الشكاوى — المسؤولية تُحدد بالإسناد لا بالقسم
+  return user.role === 'admin' || user.role === 'staff';
+}
+function loadTransfers(complaintId) {
+  return q(`SELECT t.*, fu.name AS from_name, tu.name AS to_name, pu.name AS previous_name, d.name AS department_name
+            FROM complaint_transfers t
+            LEFT JOIN users fu ON fu.id = t.from_user_id
+            LEFT JOIN users tu ON tu.id = t.to_user_id
+            LEFT JOIN users pu ON pu.id = t.previous_assigned_to
+            LEFT JOIN departments d ON d.id = t.department_id
+            WHERE t.complaint_id = ? ORDER BY t.created_at ASC, t.id ASC`, [complaintId]);
 }
 function loadComplaint(id) {
   return one(`SELECT c.*, ct.name AS type_name, d.name AS department_name,
@@ -187,8 +196,9 @@ route('POST', '/api/upload', async (req, res) => {
 route('POST', '/api/complaints', async (req, res) => {
   const s = requireRole(req, res, ['student']); if (!s) return;
   const { title, details, type_id, department_id, priority, attachment } = await parseJson(req);
-  if (!title || !details || String(title).trim().length < 5 || String(details).trim().length < 10)
-    return fail(res, 400, 'اكتب عنوان (5 أحرف+) وتفاصيل (10 أحرف+) للشكوى');
+  // الطالب حر في كتابة الشكوى — المطلوب فقط ألا تكون فارغة
+  if (!String(title || '').trim() || !String(details || '').trim())
+    return fail(res, 400, 'اكتب عنوان الشكوى وتفاصيلها');
 
   const cls = classifyComplaint(`${title} ${details}`);
   let deptId = Number(department_id) || cls.department_id;
@@ -207,9 +217,10 @@ route('POST', '/api/complaints', async (req, res) => {
   const cid = info.lastInsertRowid;
   logUpdate(cid, s.user.id, 'created', 'تم إنشاء الشكوى وتصنيفها تلقائيًا بواسطة NEXUS AI');
 
-  // إشعار لكل موظفي القسم المختص
-  const staffList = q('SELECT id FROM users WHERE role = \'staff\' AND department_id = ? AND active = 1', [deptId]);
-  for (const st of staffList) notify(st.id, 'شكوى جديدة وصلت لقسمه', `${ticketNo} — ${String(title).trim()}`, 'complaint', cid);
+  // كل شكوى جديدة تظهر في لوحة المدير ولكل الموظفين — إشعار فوري للجميع
+  const deptName = one('SELECT name FROM departments WHERE id = ?', [deptId])?.name || '';
+  const staffList = q("SELECT id FROM users WHERE role IN ('staff','admin') AND active = 1");
+  for (const st of staffList) notify(st.id, 'شكوى جديدة وصلت', `${ticketNo} — ${String(title).trim()} · ${deptName}`, 'complaint', cid);
 
   ok(res, { complaint: loadComplaint(cid), ai: cls }, 201);
 });
@@ -228,7 +239,7 @@ route('GET', '/api/complaints', async (req, res) => {
              LEFT JOIN complaint_types ct ON ct.id = c.type_id LEFT JOIN users a ON a.id = c.assigned_to WHERE 1=1`;
   const params = [];
   if (s.user.role === 'student') { sql += ' AND c.student_id = ?'; params.push(s.user.id); }
-  else if (s.user.role === 'staff') { sql += ' AND (c.department_id = ? OR c.assigned_to = ?)'; params.push(s.user.department_id, s.user.id); }
+  // المدير والموظفون يرون كل الشكاوى
   if (status) { sql += ' AND c.status = ?'; params.push(status); }
   if (priority) { sql += ' AND c.priority = ?'; params.push(priority); }
   if (dept && s.user.role === 'admin') { sql += ' AND c.department_id = ?'; params.push(Number(dept)); }
@@ -249,7 +260,15 @@ route('GET', '/api/complaints/:id', async (req, res, p) => {
                       WHERE m.complaint_id = ? ${internalAllowed ? '' : 'AND m.is_internal = 0'} ORDER BY m.created_at ASC`, [c.id]);
   const updates = q(`SELECT u2.*, u.name AS user_name, u.role AS user_role FROM complaint_updates u2 LEFT JOIN users u ON u.id = u2.user_id
                      WHERE u2.complaint_id = ? ORDER BY u2.created_at ASC`, [c.id]);
-  ok(res, { complaint: c, messages, updates });
+  ok(res, { complaint: c, messages, updates, transfers: loadTransfers(c.id) });
+});
+
+route('GET', '/api/complaints/:id/transfers', async (req, res, p) => {
+  const s = requireAuth(req, res); if (!s) return;
+  const c = one('SELECT id FROM complaints WHERE id = ?', [p.id]);
+  if (!c) return fail(res, 404, 'الشكوى غير موجودة');
+  if (!canSeeComplaint(s.user, c)) return fail(res, 403, 'لا تملك صلاحية مشاهدة هذه الشكوى');
+  ok(res, loadTransfers(Number(p.id)));
 });
 
 route('POST', '/api/complaints/:id/status', async (req, res, p) => {
@@ -273,11 +292,8 @@ route('POST', '/api/complaints/:id/assign', async (req, res, p) => {
   const c = one('SELECT * FROM complaints WHERE id = ?', [p.id]);
   if (!c) return fail(res, 404, 'الشكوى غير موجودة');
   if (!canSeeComplaint(s.user, c)) return fail(res, 403, 'ليست ضمن نطاقك');
-  let targetId = Number(assigned_to);
-  if (s.user.role === 'staff') {
-    if (targetId && targetId !== s.user.id) return fail(res, 403, 'الموظف يمكنه الإسناد لنفسه فقط');
-    targetId = s.user.id;
-  }
+  let targetId = Number(assigned_to) || s.user.id;
+  // المدير والموظفون يستطيعون إسناد الشكوى لأي موظف مؤهل
   const target = one('SELECT * FROM users WHERE id = ? AND role IN (\'staff\',\'admin\') AND active = 1', [targetId]);
   if (!target) return fail(res, 400, 'الموظف غير موجود');
   run('UPDATE complaints SET assigned_to = ?, department_id = COALESCE(?, department_id), updated_at = datetime(\'now\') WHERE id = ?', [targetId, target.department_id, c.id]);
@@ -292,15 +308,43 @@ route('POST', '/api/complaints/:id/transfer', async (req, res, p) => {
   const c = one('SELECT * FROM complaints WHERE id = ?', [p.id]);
   if (!c) return fail(res, 404, 'الشكوى غير موجودة');
   if (!canSeeComplaint(s.user, c)) return fail(res, 403, 'ليست ضمن نطاقك');
-  const newDept = Number(department_id);
+
+  const newAssignee = Number(assigned_to);
+  if (!newAssignee) return fail(res, 400, 'اختر الموظف المسؤول عن حل المشكلة');
+  const target = one("SELECT * FROM users WHERE id = ? AND role IN ('staff','admin') AND active = 1", [newAssignee]);
+  if (!target) return fail(res, 400, 'الموظف غير موجود أو موقوف');
+
+  // القسم يتبع الموظف المختار تلقائيًا، أو يُحدَّد صراحةً من النموذج
+  const newDept = Number(department_id) || target.department_id;
   if (!newDept || !one('SELECT id FROM departments WHERE id = ?', [newDept])) return fail(res, 400, 'القسم غير صحيح');
-  const newAssignee = assigned_to ? Number(assigned_to) : null;
-  if (newAssignee && !one('SELECT id FROM users WHERE id = ? AND role IN (\'staff\',\'admin\')', [newAssignee])) return fail(res, 400, 'الموظف غير موجود');
+  const cleanReason = String(reason || '').trim().slice(0, 1000);
+  const previousId = c.assigned_to || null;
+
   run('UPDATE complaints SET department_id = ?, assigned_to = ?, updated_at = datetime(\'now\') WHERE id = ?', [newDept, newAssignee, c.id]);
+  const rec = run(`INSERT INTO complaint_transfers(complaint_id, from_user_id, to_user_id, previous_assigned_to, department_id, reason)
+                   VALUES (?,?,?,?,?,?)`, [c.id, s.user.id, newAssignee, previousId, newDept, cleanReason || null]);
+
   const dept = one('SELECT name FROM departments WHERE id = ?', [newDept]);
-  logUpdate(c.id, s.user.id, 'transfer', `تم التحويل إلى قسم ${dept.name}${reason ? ' — السبب: ' + reason : ''}`);
-  for (const st of q('SELECT id FROM users WHERE role=\'staff\' AND department_id = ? AND active = 1', [newDept])) notify(st.id, 'شكوى محوّلة إليكم', `${c.ticket_no} — ${c.title}`, 'complaint', c.id);
-  notify(c.student_id, 'تم تحويل شكواك للقسم المختص', `${c.ticket_no} — أصبحت لدى قسم ${dept.name}`, 'complaint', c.id);
+  const prevName = previousId ? (one('SELECT name FROM users WHERE id = ?', [previousId]) || {}).name : null;
+  // السبب ملاحظة داخلية → تُحفظ في سجل التحويلات ولا تظهر للطالب
+  logUpdate(c.id, s.user.id, 'transfer', `تم التحويل من ${prevName || 'غير مسندة'} إلى ${target.name} — قسم ${dept.name}`);
+
+  notify(newAssignee, 'تم تحويل شكوى إليك 🫵', `${c.ticket_no} — ${c.title}${cleanReason ? ' — ملاحظة: ' + cleanReason : ''}`, 'complaint', c.id);
+  if (previousId && previousId !== newAssignee) notify(previousId, 'تم تحويل شكوى كانت مسندة إليك', `${c.ticket_no} — أصبحت لدى ${target.name}`, 'complaint', c.id);
+  notify(c.student_id, 'تم تحويل شكواك للموظف المختص', `${c.ticket_no} — أصبحت لدى ${target.name} في قسم ${dept.name}`, 'complaint', c.id);
+  ok(res, { complaint: loadComplaint(c.id), transfer: one('SELECT * FROM complaint_transfers WHERE id = ?', [rec.lastInsertRowid]) });
+});
+
+route('POST', '/api/complaints/:id/accept', async (req, res, p) => {
+  const s = requireRole(req, res, ['staff', 'admin']); if (!s) return;
+  const c = one('SELECT * FROM complaints WHERE id = ?', [p.id]);
+  if (!c) return fail(res, 404, 'الشكوى غير موجودة');
+  if (!canSeeComplaint(s.user, c)) return fail(res, 403, 'ليست ضمن نطاقك');
+  const status = c.status === 'new' ? 'in_progress' : c.status;
+  run("UPDATE complaints SET assigned_to = ?, status = ?, updated_at = datetime('now') WHERE id = ?", [s.user.id, status, c.id]);
+  if (status !== c.status) logUpdate(c.id, s.user.id, 'status', `تم تغيير الحالة إلى: ${STATUS_LABEL[status]} (استلام الموظف)`);
+  logUpdate(c.id, s.user.id, 'accepted', `استلم الشكوى وأصبح المسؤول عنها: ${s.user.name}`);
+  notify(c.student_id, 'موظف استلم شكواك', `${c.ticket_no} — ${s.user.name} بقى المسؤول عنها الآن`, 'complaint', c.id);
   ok(res, { complaint: loadComplaint(c.id) });
 });
 
@@ -431,17 +475,27 @@ route('GET', '/api/stats', async (req, res) => {
     const recent = q('SELECT id, ticket_no, title, status, priority, created_at FROM complaints WHERE student_id = ? ORDER BY created_at DESC LIMIT 5', [u.id]);
     ok(res, { total: rows.reduce((a, r) => a + r.c, 0), new: by.new || 0, in_progress: by.in_progress || 0, resolved: by.resolved || 0, rejected: by.rejected || 0, recent });
   } else if (u.role === 'staff') {
-    const scope = '(department_id = ? OR assigned_to = ?)';
-    const mine = one(`SELECT COUNT(*) c FROM complaints WHERE ${scope} AND assigned_to = ? AND status IN ('new','in_progress')`, [u.department_id, u.id, u.id]).c;
-    const open = one(`SELECT COUNT(*) c FROM complaints WHERE ${scope} AND status IN ('new','in_progress')`, [u.department_id, u.id]).c;
-    const resolvedWeek = one(`SELECT COUNT(*) c FROM complaints WHERE ${scope} AND status='resolved' AND resolved_at >= datetime('now','-7 days')`, [u.department_id, u.id]).c;
-    const resolvedTotal = one(`SELECT COUNT(*) c FROM complaints WHERE ${scope} AND status='resolved'`, [u.department_id, u.id]).c;
-    const avg = one(`SELECT AVG((julianday(resolved_at) - julianday(created_at)) * 24) h FROM complaints WHERE ${scope} AND status='resolved' AND resolved_at IS NOT NULL`, [u.department_id, u.id]);
-    const ratings = one(`SELECT AVG(rating) r FROM complaints WHERE ${scope} AND rating IS NOT NULL`, [u.department_id, u.id]);
+    // إحصاءات اللوحة تشمل كل الشكاوى (الكل يراها) + عدد الشكاوى المسندة للموظف شخصيًا
+    const mine = one("SELECT COUNT(*) c FROM complaints WHERE assigned_to = ? AND status IN ('new','in_progress')", [u.id]).c;
+    const open = one("SELECT COUNT(*) c FROM complaints WHERE status IN ('new','in_progress')").c;
+    const resolvedWeek = one("SELECT COUNT(*) c FROM complaints WHERE status='resolved' AND resolved_at >= datetime('now','-7 days')").c;
+    const resolvedTotal = one("SELECT COUNT(*) c FROM complaints WHERE status='resolved'").c;
+    const avg = one("SELECT AVG((julianday(resolved_at) - julianday(created_at)) * 24) h FROM complaints WHERE status='resolved' AND resolved_at IS NOT NULL");
+    const ratings = one('SELECT AVG(rating) r FROM complaints WHERE rating IS NOT NULL');
     ok(res, { assigned_to_me: mine, open, resolved_week: resolvedWeek, resolved_total: resolvedTotal, avg_resolution_hours: avg && avg.h ? Math.round(avg.h) : 0, satisfaction: ratings && ratings.r ? Math.round(ratings.r * 20) : null });
   } else {
     ok(res, buildInsights());
   }
+});
+
+// ===== قائمة الموظفين المتاحين للإسناد/التحويل (مدير وموظفون) =====
+route('GET', '/api/users/employees', async (req, res) => {
+  const s = requireRole(req, res, ['staff', 'admin']); if (!s) return;
+  const rows = q(`SELECT u.*, d.name AS department_name FROM users u
+                  LEFT JOIN departments d ON d.id = u.department_id
+                  WHERE u.role IN ('staff','admin') AND u.active = 1
+                  ORDER BY u.department_id IS NULL, u.department_id, u.name`);
+  ok(res, rows.map(publicUser));
 });
 
 // ===== Admin: users / departments / types =====
