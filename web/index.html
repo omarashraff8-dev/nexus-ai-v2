@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="rtl">
+<head>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="NEXUS AI — المنصة الجامعية الذكية: اسأل عن اللوائح بالعربية، قدّم شكواك، تابع حلها خطوة خطوة، والإدارة تدير وتتوقع بالمساعد الذكي المدعوم بـ RAG.">
+<title>NEXUS AI | المنصة الجامعية الذكية للشكاوى والخدمات</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,2 95,27 95,73 50,98 5,73 5,27' fill='%230A1B33'/><polygon points='50,10 87,31 87,69 50,90 13,69 13,31' fill='none' stroke='%2338BDF8' stroke-width='5'/><path d='M32 68 V32 L68 68 V32' stroke='%2338BDF8' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/nexus.css">
+</head>
+<body class="landing">
+
+<!-- ══════════ NAV ══════════ -->
+<header class="nav" id="topNav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html" aria-label="NEXUS AI">
+      <svg class="logo-mark" viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,2 95,27 95,73 50,98 5,73 5,27" fill="none" stroke="#38BDF8" stroke-width="6"/><polygon points="50,16 82,34 82,66 50,84 18,66 18,34" fill="rgba(56,189,248,.12)"/><path d="M33 67 V33 L67 67 V33" stroke="#38BDF8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">NEXUS<b>AI</b><small>SMART CAMPUS</small></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features" data-i18n="nav_features">المميزات</a></li>
+      <li><a href="#ai" data-i18n="nav_ai">الذكاء الاصطناعي</a></li>
+      <li><a href="#how" data-i18n="nav_how">إزاي بيشتغل</a></li>
+      <li><a href="#departments" data-i18n="nav_depts">الأقسام</a></li>
+      <li><a href="#contact" data-i18n="nav_contact">تواصل</a></li>
+    </ul>
+    <div class="nav-cta">
+      <button class="lang-toggle" id="langToggle">EN</button>
+      <a class="btn btn-cyan btn-sm" href="login.html" data-i18n="nav_login">تسجيل الدخول</a>
+      <button class="burger" id="burger" aria-label="القائمة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features">المميزات</a><a href="#ai">الذكاء الاصطناعي</a><a href="#how">إزاي بيشتغل</a><a href="#departments">الأقسام</a><a href="#contact">تواصل</a><a href="login.html">تسجيل الدخول ←</a>
+  </div>
+</header>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div>
+      <span class="chip"><span class="dot"></span> <span data-i18n="hero_chip">مدعوم بالذكاء الاصطناعي — RAG على لوائح المعهد</span></span>
+      <h1 data-i18n="hero_title">كل مشكلة في الجامعة، <span class="grad">حلها بذكاء وتتبع خطوة بخطوة</span></h1>
+      <p class="lead" data-i18n="hero_lead">منصة NEXUS AI الموحّدة: اسأل عن اللوائح والمقررات بالعربي، قدّم شكواك أو طلبك، تابع حلها من بيتك — والإدارة تدير وتتوقع وتتخذ قرارات مبنية على بيانات حقيقية.</p>
+      <div class="hero-actions">
+        <a href="login.html" class="btn btn-primary" data-i18n="hero_cta1">ابدأ مجانًا بحسابك
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6 6-6-6 6-6"/></svg></a>
+        <a href="#how" class="btn btn-ghost" data-i18n="hero_cta2">شوف إزاي بيشتغل</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><b>+1,250</b><span data-i18n="stat1">طلب تم حله</span></div>
+        <div class="hstat"><b>94%</b><span data-i18n="stat2">رضا الطلاب</span></div>
+        <div class="hstat"><b>7</b><span data-i18n="stat3">أقسام مرتبطة بالنظام</span></div>
+        <div class="hstat"><b>&lt; 24h</b><span data-i18n="stat4">متوسط الاستجابة</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="ai-orb">
+        <div class="orb-ring"></div>
+        <div class="orb-ring r2"></div>
+        <div class="orb-core">
+          <svg width="110" height="110" viewBox="0 0 100 100"><polygon points="50,6 92,30 92,70 50,94 8,70 8,30" fill="none" stroke="#BFE3FF" stroke-width="4" opacity=".8"/><path d="M35 66 V34 L65 66 V34" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="orb-node" style="top:4%;inset-inline-start:0">تصنيف تلقائي<small>دقة 92%</small></div>
+        <div class="orb-node" style="top:22%;inset-inline-end:-4%;animation-delay:.8s">RAG على اللوائح<small>22 مستندًا</small></div>
+        <div class="orb-node" style="bottom:28%;inset-inline-start:-6%;animation-delay:1.6s">توقع الحجم<small>أسبوعي</small></div>
+        <div class="orb-node" style="bottom:2%;inset-inline-end:6%;animation-delay:2.4s">تلخيص ذكي<small>للإدارة</small></div>
+      </div>
+      <div class="chat-float">
+        <div class="q">الطالب يسأل: «إيه شروط التحويل من معهد تاني؟»</div>
+        <div class="a">يجوز التحويل بعد سنة دراسية كاملة ومعادلة المواد بلجنة المعادلة، والتقديم خلال أول أسبوعين من الفصل...</div>
+        <div class="src"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13z"/></svg> مصدر: لائحة المعهد — صفحة 45</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section class="section" id="features" style="background:var(--navy-800);border-top:1px solid rgba(255,255,255,.06)">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">ليه NEXUS AI؟</span>
+      <h2>موظفو المعهد مش هيلاحقوا الجروبات.. والطلاب مش هيلفوا على المكاتب</h2>
+      <p>كل خدمة جامعية في مكان واحد، بتجربة سريعة وموثقة وقابلة للقياس.</p>
+    </div>
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V6a2 2 0 0 1 2-2h2"/><path d="M9 3a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2z"/><rect x="3" y="12" width="18" height="8" rx="2"/><path d="M8 16h.01M16 16h.01"/></svg></div>
+        <h3>المساعد الجامعي الذكي</h3>
+        <p>اسأل بأي صيغة — فصحى أو عامية — والنظام يبحث داخل لوائح المعهد ويجاوب بمعلومة مرتبطة بالمصدر ورقم الصفحة، مش إجابات مخترعة.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M10 18h4"/></svg></div>
+        <h3>تصنيف تلقائي للشكاوى</h3>
+        <p>النظام يحدد نوع المشكلة، القسم المسؤول، درجة الأولوية، وهل الشكوى عاجلة — ويحوّلها تلقائيًا للجهة المختصة.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>تتبع خطوة بخطوة</h3>
+        <p>من «جديدة» لـ «تم الحل»: الطالب يشوف كل تحديث وإشعار لحظة بلحظة، زي ما بيتبع شحنة في شركة شحن.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>محادثة موثقة مع الموظف</h3>
+        <p>كل رد واستفسار محفوظ جوه الشكوى نفسها: اسم المرسل، التاريخ، المرفقات — ولا شيء بيضيع في الرسائل الخاصة.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 6-6"/></svg></div>
+        <h3>لوحات للإدارة بقرارات حقيقية</h3>
+        <p>أكثر المشكلات تكرارًا، الأقسام الأبطأ، الفترات الأعلى ضغطًا، وتوقع الحجم القادم — كلها من بياناتك الفعلية.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>صلاحيات وأمان على مستوى البنوك</h3>
+        <p>كل دور يرى ما يخصه فقط — بتطبيق الصلاحيات في الـ Backend وليس في الواجهة، مع جلسات مشفرة ومرفقات محمية.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ AI ══════════ -->
+<section class="section" id="ai" style="background:var(--navy-900)">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">الجزء المميز في المشروع</span>
+      <h2>أربع وظائف ذكاء اصطناعي.. مرتبطة ببياناتك، مش مجرد أزرار شكلية</h2>
+      <p>كل وظيفة هنا تقرأ وتكتب في نفس قاعدة بيانات النظام — من الشكوى لحد التقرير.</p>
+    </div>
+    <div class="grid-4">
+      <div class="feature-card ai-card"><span class="ai-num">01</span>
+        <span class="tag">RAG + EMBEDDINGS</span>
+        <h3 style="margin-top:.4rem">المساعد الجامعي الذكي</h3>
+        <p>بحث دلالي داخل لوائح المعهد (التحويل، الرصد، الغياب، المصروفات...) مع ذكر المصدر ورقم الصفحة مع كل إجابة، ومحادثات محفوظة لكل طالب.</p>
+      </div>
+      <div class="feature-card ai-card"><span class="ai-num">02</span>
+        <span class="tag">NLP CLASSIFICATION</span>
+        <h3 style="margin-top:.4rem">تحليل الشكاوى تلقائيًا</h3>
+        <p>النظام يحدد نوع المشكلة والقسم المختص ودرجة الأولوية (عاجلة / مرتفعة / عادية) من نص الشكوى نفسه، ويقترح التحويل تلقائيًا.</p>
+      </div>
+      <div class="feature-card ai-card"><span class="ai-num">03</span>
+        <span class="tag">FORECASTING</span>
+        <h3 style="margin-top:.4rem">التنبؤ بالمشكلات</h3>
+        <p>تحليل الاتجاه الأسبوعي للشكاوى وتوقع حجم الأسبوع القادم انحداريًا (Linear Regression)، مع اكتشاف أكثر الأقسام والمواسم ضغطًا.</p>
+      </div>
+      <div class="feature-card ai-card"><span class="ai-num">04</span>
+        <span class="tag">AUTO-SUMMARY</span>
+        <h3 style="margin-top:.4rem">تلخيص الشكاوى والتقارير</h3>
+        <p>بدل قراءة 200 شكوى: الملخص الذكي يدّي المدير أبرز المشكلات، الأسباب المتكررة، والتوصيات — بضغطة زر، مع حفظه وتصديره.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HOW IT WORKS ══════════ -->
+<section class="section" id="how" style="background:var(--navy-800);border-top:1px solid rgba(255,255,255,.06)">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">رحلة الطالب في ٤ خطوات</span>
+      <h2>من «عندي مشكلة» إلى «اتحلت» في دقائق</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step"><h3>سجل دخول بحسابك</h3><p>بريدك الجامعي وكلمة المرور — كل دور (طالب / موظف / إدارة) يتفتح على لوحته مباشرة.</p></div>
+      <div class="how-step"><h3>اكتب شكواك بأي صيغة</h3><p>بفصحى أو عامية، مع صورة أو ملف — الذكاء الاصطناعي يصنفها ويحدد الأولوية والقسم.</p></div>
+      <div class="how-step"><h3>الجهة المختصة ترد</h3><p>الموظف يستلمها في لوحته، يرد أو يطلب معلومات أو يحوّلها لقسم تاني — وكل ذلك موثّق.</p></div>
+      <div class="how-step"><h3>الإدارة تشوف الصورة كاملة</h3><p>تقارير، توقعات، وملخصات ذكية تساعد المعهد يحل المشكلة من جذورها مش من الأعراض.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ AUDIENCE ══════════ -->
+<section class="section" id="audience" style="background:var(--navy-900)">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">ثلاثة أدوار، نظام واحد</span>
+      <h2>كل حد يشوف اللي يهمه — بالصلاحيات الصحيحة</h2>
+    </div>
+    <div class="grid-3">
+      <div class="feature-card" style="border-color:rgba(56,189,248,.4)">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <h3>🎓 الطالب</h3>
+        <p>يقدم شكوى أو طلب في دقيقة، يشوف حالته لحظة بلحظة، يتكلم مع الموظف، يسأل المساعد الذكي عن اللوائح، ويوصله إشعار بأي تغيير.</p>
+      </div>
+      <div class="feature-card" style="border-color:rgba(96,165,250,.4)">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></div>
+        <h3>💼 الموظف</h3>
+        <p>لوحة شكاوى كاملة: فلترة بالحالة والأولوية والقسم، الرد على الطالب، تغيير الحالة، ملاحظات داخلية، تحويل لقسم تاني، وإحصائيات أدائه.</p>
+      </div>
+      <div class="feature-card" style="border-color:rgba(167,139,250,.4)">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2z"/><path d="M12 11l8-4.5M12 11L4 6.5M12 11v9"/></svg></div>
+        <h3>🏛️ الإدارة</h3>
+        <p>إدارة الموظفين والصلاحيات والأقسام، توزيع الشكوى على الموظف المناسب، تقارير وتحليلات وملخصات ذكية، وتصدير CSV وطباعة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DEPARTMENTS ══════════ -->
+<section class="section light-section" id="departments">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">تغطية كاملة</span>
+      <h2>الأقسام المتصلة بالمنصة</h2>
+      <p>الشكاوى بتتحوّل تلقائيًا للي يحلها — من غير تدخّل يدوي.</p>
+    </div>
+    <div class="dept-chips">
+      <span class="dept-chip"><span></span>شؤون الطلاب</span>
+      <span class="dept-chip"><span></span>التسجيل والقبول</span>
+      <span class="dept-chip"><span></span>الامتحانات والكنترول</span>
+      <span class="dept-chip"><span></span>الشؤون المالية</span>
+      <span class="dept-chip"><span></span>تكنولوجيا المعلومات والدعم الفني</span>
+      <span class="dept-chip"><span></span>المرافق والصيانة</span>
+      <span class="dept-chip"><span></span>المكتبة المركزية</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ CTA ══════════ -->
+<section class="cta-band" id="contact">
+  <h2>جاهز تشوف الجيل الجاي من إدارة الجامعة؟</h2>
+  <a href="login.html" class="btn btn-cyan">جرّب NEXUS AI دلوقتي
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6 6-6-6 6-6"/></svg></a>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <a class="logo" href="index.html" style="text-decoration:none">
+      <svg class="logo-mark" viewBox="0 0 100 100" style="width:32px;height:32px"><polygon points="50,2 95,27 95,73 50,98 5,73 5,27" fill="none" stroke="#38BDF8" stroke-width="6"/><path d="M33 67 V33 L67 67 V33" stroke="#38BDF8" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text" style="font-size:1.05rem">NEXUS<b>AI</b></span>
+    </a>
+    <p>مشروع تخرج — المعهد العالي للهندسة · منصة الشكاوى والخدمات الجامعية الذكية · <a href="login.html">تسجيل الدخول</a></p>
+    <p style="font-size:.75rem">© 2026 NEXUS AI. صُنع بإتقان في مصر 🇪🇬</p>
+  </div>
+</footer>
+
+<script src="js/static-backend.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/core.js"></script>
+<script src="js/landing.js"></script>
+</body>
+</html>

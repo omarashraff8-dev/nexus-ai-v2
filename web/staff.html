@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="rtl">
+<head>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الموظف | NEXUS AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,2 95,27 95,73 50,98 5,73 5,27' fill='%230A1B33'/><path d='M32 68 V32 L68 68 V32' stroke='%2338BDF8' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/nexus.css">
+<style>
+.status-actions { display:flex;gap:.4rem;flex-wrap:wrap;margin:.5rem 0; }
+.internal-toggle { display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:800;color:#B45309;background:#FFF8E1;border:1px dashed #E3B341;border-radius:8px;padding:.3rem .6rem;cursor:pointer;user-select:none }
+.internal-toggle input { accent-color:#D97706 }
+.modal-grid { grid-template-columns: 1.05fr .95fr; }
+</style>
+</head>
+<body>
+<div class="dash">
+
+  <!-- ════════ SIDEBAR ════════ -->
+  <aside class="sidebar" id="sidebar">
+    <button type="button" class="sidebar-close" aria-label="إغلاق القائمة" title="إغلاق القائمة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <a class="logo" href="index.html" style="text-decoration:none">
+      <svg class="logo-mark" viewBox="0 0 100 100"><polygon points="50,2 95,27 95,73 50,98 5,73 5,27" fill="none" stroke="#38BDF8" stroke-width="6"/><path d="M33 67 V33 L67 67 V33" stroke="#38BDF8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">NEXUS<b>AI</b></span>
+    </a>
+    <nav class="side-nav" aria-label="التنقل الرئيسي">
+      <button class="side-link active" data-section="dashboard" data-title="لوحة التحكم"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 6-6"/></svg>لوحة التحكم</button>
+      <button class="side-link" data-section="complaints" data-title="الشكاوى والطلبات"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>الشكاوى والطلبات<span class="side-badge" id="openBadge" style="display:none">0</span></button>
+      <button class="side-link" data-section="attendance" data-title="حضور بـ QR"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>حضور بـ QR</button>
+      <button class="side-link" data-section="lostfound" data-title="المفقودات والموجودات"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>المفقودات والموجودات</button>
+      <button class="side-link" data-section="notifs" data-title="الإشعارات"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>الإشعارات<span class="side-badge" id="sideNotifBadge" style="display:none">0</span></button>
+    </nav>
+    <div class="side-user">
+      <div class="avatar" id="userAvatar" style="background:linear-gradient(135deg,#7C3AED,#A78BFA)">م</div>
+      <div style="min-width:0"><div class="name" id="userName">...</div><div class="role" id="userRole">موظف</div></div>
+      <button class="logout-btn" id="logoutBtn" title="تسجيل الخروج" aria-label="تسجيل الخروج"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+    </div>
+  </aside>
+
+  <!-- ════════ MAIN ════════ -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:.7rem">
+        <button class="icon-btn sidebar-toggle" aria-label="القائمة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div><h1 id="topbarTitle">لوحة التحكم</h1><div class="sub" id="deptSub">قسم — NEXUS AI</div></div>
+      </div>
+      <div style="position:relative">
+        <button class="icon-btn" id="bellBtn" aria-label="الإشعارات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="badge-dot" id="bellBadge" style="display:none">0</span></button>
+        <div id="notifDropdown" style="display:none;position:absolute;top:calc(100% + 10px);inset-inline-end:0;width:330px;max-width:90vw;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:60;padding:.5rem"></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ═══════ 1) لوحة التحكم ═══════ -->
+      <section class="page-section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="icon" style="background:#F3E8FF"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M16 8a6 6 0 0 1 0 8M8 8a6 6 0 0 0 0 8"/></svg></div><div><b id="stAssigned">0</b><span>مسندة إليّ شخصيًا</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--warn-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M7 12h10M10 18h4"/></svg></div><div><b id="stOpen">0</b><span>مفتوحة في القسم</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--ok-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div><b id="stResolvedWeek">0</b><span>حللتها هذا الأسبوع</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--info-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><b><span id="stAvgHours">0</span> <small style="font-size:.6em">ساعة</small></b><span>متوسط زمن الحل</span></div></div>
+        </div>
+
+        <div class="card" style="background:var(--ok-bg);border-color:#BBE9CD;display:flex;gap:.8rem;align-items:center">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="M20 6L9 17l-5-5"/></svg>
+          <div><b style="color:#14532D">إنجازي الكلي: <span id="stResolvedTotal">0</span> شكوى تم حلها</b><br><span style="font-size:.8rem;color:#166534">رضا الطلاب عن حلولك: <b id="stSatisfaction">—</b></span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg>عاجل يحتاج تدخل الآن</h2><button class="link" data-goto="complaints">عرض كل الشكاوى ←</button></div>
+          <div id="urgentList" style="display:grid;gap:.5rem"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ 2) الشكاوى والطلبات ═══════ -->
+      <section class="page-section" id="section-complaints">
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 9h8M8 13h8"/></svg>الوارد من الطلاب</h2><span class="chip" style="margin:0" id="resultCount">0 شكوى</span></div>
+          <div class="filters">
+            <input type="search" id="fSearch" placeholder="ابحث برقم الشكوى، اسم الطالب، أو كلمة..." style="flex:1;min-width:220px" aria-label="بحث">
+            <select id="fStatus" aria-label="الحالة"><option value="">كل الحالات</option><option value="new">جديدة</option><option value="in_progress">قيد المراجعة</option><option value="resolved">تم الحل</option><option value="rejected">مرفوضة</option></select>
+            <select id="fPriority" aria-label="الأولوية"><option value="">كل الأولويات</option><option value="urgent">عاجلة</option><option value="high">مرتفعة</option><option value="medium">متوسطة</option><option value="low">منخفضة</option></select>
+            <button class="btn btn-outline btn-sm" id="clearFilters">مسح الفلاتر</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>رقم الشكوى</th><th>الطالب</th><th>العنوان / النوع</th><th>الأولوية</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead>
+              <tbody id="complaintsTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted)">جارِ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ حضور بـ QR ═══════ -->
+      <section class="page-section" id="section-attendance">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start" class="admin-two-col">
+          <div class="card">
+            <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>إنشاء جلسة حضور بـ QR</h2></div>
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">اعمل كود QR للمحاضرة — الطلاب يمسحوه بموبايلهم ويتسجل حضورهم تلقائيًا. الكود بيخلص صلاحيته بعد المدة اللي تختارها.</p>
+            <form id="createSessionForm">
+              <div class="field"><label for="sessionLecture">اسم المحاضرة</label><input id="sessionLecture" required placeholder="مثال: قواعد البيانات — CS-201"></div>
+              <div class="field"><label for="sessionDuration">مدة صلاحية الكود</label><select id="sessionDuration"><option value="15">15 دقيقة</option><option value="30">30 دقيقة</option><option value="45">45 دقيقة</option><option value="60" selected>60 دقيقة (محاضرة كاملة)</option><option value="90">90 دقيقة</option><option value="120">120 دقيقة</option></select></div>
+              <button type="submit" class="btn btn-primary btn-block" id="createSessionBtn">إنشاء الكود وإظهار QR</button>
+            </form>
+            <div class="qr-wrap" id="qrActiveWrap" style="display:none;margin-top:1rem">
+              <div class="qr-box"><div id="qrCanvas"></div><div class="qr-code-text" id="qrCodeText" dir="ltr"></div><div class="qr-expiry" id="qrExpiry"></div></div>
+              <div style="font-size:.82rem;color:var(--muted);display:grid;gap:.4rem;align-content:start">
+                <b style="color:var(--navy-800)">الكود جاهز ✓</b>
+                <p>الطلاب يمسحوا الـ QR بكاميرا الموبايل من «سجّل حضوري» في لوحتهم، أو يكتبوا الكود يدويًا.</p>
+                <p>كل طالب يسجل مرة واحدة فقط، ولا يمكن استخدام الكود بعد انتهاء المدة.</p>
+                <p id="qrLiveCount" style="font-weight:800;color:var(--blue)">0 طالب سجل حتى الآن</p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>جلساتي</h2><button class="link" id="refreshSessions">تحديث ↻</button></div>
+            <div class="table-wrap"><table class="data"><thead><tr><th>المحاضرة</th><th>الكود</th><th>الحضور</th><th>الحالة</th></tr></thead><tbody id="sessionsTableBody"><tr><td colspan="4" style="text-align:center;color:var(--muted)">لسه مفيش جلسات</td></tr></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ المفقودات والموجودات (عرض وإدارة) ═══════ -->
+      <section class="page-section" id="section-lostfound">
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>المفقودات والموجودات — إدارة</h2><span class="chip" style="margin:0" id="staffLostCount">0 إعلان</span></div>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">مكتب شؤون الطلاب مسؤول عن الأغراض المستلمة — تواصل مع صاحب الإعلان من هنا وحدّث حالته.</p>
+          <div class="filters">
+            <select id="staffLfStatus" aria-label="الحالة"><option value="">كل الحالات</option><option value="open">مفتوح</option><option value="found">تم العثور عليه</option><option value="returned">تم التسليم</option></select>
+            <select id="staffLfType" aria-label="النوع"><option value="">الكل</option><option value="lost">مفقودات</option><option value="found">موجودات</option></select>
+            <input type="search" id="staffLfSearch" placeholder="ابحث..." style="flex:1;min-width:160px">
+          </div>
+          <div id="staffLostList" style="display:grid;gap:.5rem"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ 3) الإشعارات ═══════ -->
+      <section class="page-section" id="section-notifs">
+        <div class="card" style="max-width:760px">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>الإشعارات</h2><button class="btn btn-outline btn-sm" id="markAllBtn">تعليم الكل كمقروء</button></div>
+          <div id="notifList"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════ مودال الشكوى ══════════ -->
+<div class="modal-overlay" id="complaintModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">تفاصيل الشكوى</h3>
+      <button class="icon-btn" id="closeModalBtn" aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div id="modalHeadInfo" style="margin-bottom:.6rem"></div>
+      <div class="employee-banner" id="employeeConfirmBanner" role="alert">
+        <div><b>🔔 الشؤون طلبت تأكيد الحل</b><p id="employeeBannerText">هل المشكلة اتحلت فعلًا؟ رد من هنا عشان تتقفل رسميًا.</p></div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn btn-ok btn-sm" id="employeeConfirmYes">✓ الموظف أكد الحل</button>
+          <button class="btn btn-danger btn-sm" id="employeeConfirmNo">✗ لسه</button>
+        </div>
+        <input id="employeeConfirmNote" placeholder="ملاحظة اختيارية للشؤون..." aria-label="ملاحظة للشؤون">
+        <p id="employeeConfirmState" style="display:none;font-weight:800;color:#7EE0A0"></p>
+      </div>
+      <div class="stepper" id="modalStepper" aria-label="مراحل الشكوى من الإرسال حتى الإغلاق"></div>
+      <div class="modal-grid">
+        <div style="display:grid;gap:.7rem;align-content:start">
+          <div class="ai-analysis" id="modalAiBox" style="display:none"></div>
+          <div><h4 style="font-size:.82rem;color:var(--navy-800);margin-bottom:.3rem">تفاصيل الطالب</h4>
+            <div class="detail-row"><span>اسم الطالب</span><b id="mdStudent"></b></div>
+            <div class="detail-row"><span>الرقم الجامعي</span><b id="mdCode" dir="ltr"></b></div>
+            <div class="detail-row"><span>البريد</span><b id="mdEmail" dir="ltr" style="font-size:.75rem"></b></div>
+            <div class="detail-row"><span>نوع الشكوى</span><b id="mdType"></b></div>
+            <div class="detail-row" id="mdRating" style="display:none"><span>تقييم الطالب للخدمة</span><b id="mdRatingValue"></b></div>
+            <p id="mdRatingComment" style="display:none;font-size:.78rem;background:#FFFBEB;border:1px dashed #E3B341;border-radius:8px;padding:.35rem .6rem;margin-top:.3rem"></p>
+          </div>
+          <p id="modalDetails" style="font-size:.87rem;white-space:pre-line;background:#F8FBFF;border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem"></p>
+          <div id="modalAttachment" style="font-size:.8rem"></div>
+          <div><h4 style="font-size:.82rem;color:var(--navy-800);margin-bottom:.3rem">سجل التحديثات</h4><ul class="timeline" id="modalTimeline"></ul></div>
+          <!-- إجراءات -->
+          <div class="status-actions">
+            <button class="btn btn-outline btn-sm" data-status="in_progress" style="border-color:#F59E0B;color:#B45309">⏳ قيد المراجعة</button>
+            <button class="btn btn-ok btn-sm" data-status="resolved">✓ تم الحل</button>
+            <button class="btn btn-danger btn-sm" data-status="rejected">رفض</button>
+            <button class="btn btn-outline btn-sm" id="assignToMeBtn">🙋 تولّيها</button>
+            <button class="btn btn-outline btn-sm" id="requestInfoBtn">❓ طلب معلومات</button>
+          </div>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+            <label for="modalPriority" style="font-size:.75rem;font-weight:800;color:var(--muted)">الأولوية:</label>
+            <select id="modalPriority" style="border:1.5px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.8rem" aria-label="تعديل الأولوية يدويًا">
+              <option value="low">منخفضة</option><option value="medium">متوسطة</option><option value="high">مرتفعة</option><option value="urgent">عاجلة</option><option value="critical">حرجة</option>
+            </select>
+            <select id="transferDept" style="border:1.5px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.8rem" aria-label="تحويل إلى قسم"></select>
+            <button class="btn btn-outline btn-sm" id="transferBtn">↩ تحويل</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;min-height:280px">
+          <h4 style="font-size:.82rem;color:var(--navy-800);margin-bottom:.3rem">المحادثة</h4>
+          <div class="chat-box" id="modalChat" style="flex:1;min-height:200px"></div>
+          <label class="internal-toggle" style="margin-top:.5rem"><input type="checkbox" id="internalNoteToggle"> 🔒 ملاحظة داخلية (الطالب مش هيشوفها)</label>
+          <form class="chat-input" id="modalMessageForm" style="margin-top:.4rem">
+            <input id="modalMessageInput" autocomplete="off" placeholder="اكتب ردًا على الطالب..." aria-label="الرد">
+            <button type="submit" class="send-btn" aria-label="إرسال"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="js/static-backend.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/core.js"></script>
+<script src="js/staff.js"></script>
+</body>
+</html>

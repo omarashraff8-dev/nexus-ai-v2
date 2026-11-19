@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="rtl">
+<head>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول | NEXUS AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,2 95,27 95,73 50,98 5,73 5,27' fill='%230A1B33'/><path d='M32 68 V32 L68 68 V32' stroke='%2338BDF8' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/nexus.css">
+</head>
+<body style="background:var(--navy-900)">
+
+<div class="auth-wrap">
+  <!-- الجانب التعريفي -->
+  <aside class="auth-side">
+    <a class="logo" href="index.html" style="text-decoration:none;width:max-content">
+      <svg class="logo-mark" viewBox="0 0 100 100"><polygon points="50,2 95,27 95,73 50,98 5,73 5,27" fill="none" stroke="#38BDF8" stroke-width="6"/><path d="M33 67 V33 L67 67 V33" stroke="#38BDF8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">NEXUS<b>AI</b><small>SMART CAMPUS</small></span>
+    </a>
+    <h1>باب واحد..<br><span class="grad">لكل خدمات الجامعة</span></h1>
+    <p>من شكوى بتنكتب في دقيقة، لحل بتوصله على إشعار — والإدارة تشوف الصورة كاملة. كل ده بذكاء اصطناعي حقيقي على بيانات المعهد.</p>
+    <ul class="auth-points">
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> مساعد ذكي يجاوب من لوائح المعهد بالمصدر والصفحة</li>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> تصنيف تلقائي للشكوى وتحديد الأولوية والقسم</li>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> متابعة لحظة بلحظة + إشعارات فورية</li>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> صلاحيات لكل دور: طالب / موظف / إدارة</li>
+    </ul>
+    <div class="orb-node" style="position:static;width:max-content;animation:none">💡 جرّب حساب تجريبي من الأزرار على الشمال</div>
+  </aside>
+
+  <!-- الفورم -->
+  <main class="auth-form-side">
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" id="tabLogin" role="tab">تسجيل الدخول</button>
+        <button class="auth-tab" id="tabRegister" role="tab">حساب طالب جديد</button>
+      </div>
+
+      <div class="form-error" id="formError" role="alert"></div>
+
+      <!-- ── فورم الدخول ── -->
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="loginEmail">البريد الجامعي</label>
+          <input id="loginEmail" name="email" type="email" required autocomplete="email" placeholder="you@nexus.edu" dir="ltr" style="text-align:left">
+        </div>
+        <div class="field">
+          <label for="loginPassword">كلمة المرور</label>
+          <input id="loginPassword" name="password" type="password" required autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">دخول للوحتي
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+        </button>
+        <div class="demo-accounts" aria-label="حسابات تجريبية">
+          <span style="font-size:.72rem;color:var(--muted);align-self:center">حسابات تجريبية:</span>
+          <button type="button" class="demo-btn" data-email="student@nexus.edu" data-pass="student123">🎓 طالب</button>
+          <button type="button" class="demo-btn" data-email="staff@nexus.edu" data-pass="staff123">💼 موظف</button>
+          <button type="button" class="demo-btn" data-email="admin@nexus.edu" data-pass="admin123">🏛️ مدير</button>
+          <button type="button" class="demo-btn" id="demoReset" style="display:none;border-style:solid" onclick="window.nexusResetStaticDemo &amp;&amp; window.nexusResetStaticDemo()">↺ إعادة ضبط الداتا</button>
+        </div>
+      </form>
+
+      <!-- ── فورم إنشاء حساب طالب ── -->
+      <form id="registerForm" style="display:none" novalidate>
+        <div class="field">
+          <label for="regName">الاسم الكامل</label>
+          <input id="regName" name="name" type="text" required placeholder="عمر أشرف محمد">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">
+          <div class="field">
+            <label for="regCode">الرقم الجامعي</label>
+            <input id="regCode" name="student_code" type="text" inputmode="numeric" placeholder="20230214" dir="ltr" style="text-align:left">
+          </div>
+          <div class="field">
+            <label for="regPhone">رقم الموبايل</label>
+            <input id="regPhone" name="phone" type="tel" placeholder="01000000000" dir="ltr" style="text-align:left">
+          </div>
+        </div>
+        <div class="field">
+          <label for="regEmail">البريد الجامعي</label>
+          <input id="regEmail" name="email" type="email" required placeholder="you@nexus.edu" dir="ltr" style="text-align:left">
+        </div>
+        <div class="field">
+          <label for="regPassword">كلمة المرور</label>
+          <input id="regPassword" name="password" type="password" required minlength="6" placeholder="6 أحرف على الأقل">
+          <div class="hint">حسابات الموظفين والإدارة ينشئها مدير النظام فقط من لوحة التحكم.</div>
+        </div>
+        <button type="submit" class="btn btn-cyan btn-block" id="registerBtn">إنشاء حسابي والدخول</button>
+      </form>
+
+      <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:1rem">بالدخول أنت توافق على شروط استخدام منصة المعهد وسياسة الخصوصية.</p>
+    </div>
+  </main>
+</div>
+
+<script src="js/static-backend.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/core.js"></script>
+<script>
+const next = new URLSearchParams(location.search).get('next');
+const errorBox = document.getElementById('formError');
+function showError(msg) { errorBox.textContent = msg; errorBox.style.display = 'block'; errorBox.scrollIntoView({behavior:'smooth', block:'center'}); }
+function hideError() { errorBox.style.display = 'none'; }
+
+// لو مسجل دخول بالفعل → ودّيه لوحته
+(async () => { const r = await api('/api/auth/me'); if (r.ok) window.location.replace(next || ROLE_HOME[r.data.user.role]); })();
+
+// التابات
+const tabLogin = document.getElementById('tabLogin'), tabRegister = document.getElementById('tabRegister');
+const loginForm = document.getElementById('loginForm'), registerForm = document.getElementById('registerForm');
+function activate(tab) {
+  hideError();
+  const isLogin = tab === 'login';
+  tabLogin.classList.toggle('active', isLogin);
+  tabRegister.classList.toggle('active', !isLogin);
+  loginForm.style.display = isLogin ? 'block' : 'none';
+  registerForm.style.display = isLogin ? 'none' : 'block';
+}
+tabLogin.addEventListener('click', () => activate('login'));
+tabRegister.addEventListener('click', () => activate('register'));
+
+// في الديمو الثابت: أظهر زر إعادة الضبط
+if (window.NEXUS_STATIC) { const b = document.getElementById('demoReset'); if (b) b.style.display = 'inline-flex'; }
+
+// حسابات تجريبية
+document.querySelectorAll('.demo-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.getElementById('loginEmail').value = btn.dataset.email;
+  document.getElementById('loginPassword').value = btn.dataset.pass;
+  activate('login');
+}));
+
+// تسجيل الدخول
+loginForm.addEventListener('submit', async e => {
+  e.preventDefault(); hideError();
+  const btn = document.getElementById('loginBtn'); btn.disabled = true;
+  const r = await api('/api/auth/login', { method: 'POST', body: { email: loginForm.email.value.trim(), password: loginForm.password.value } });
+  if (!r.ok) { showError(r.error || 'تعذر تسجيل الدخول'); btn.disabled = false; return; }
+  window.location.href = next || ROLE_HOME[r.data.user.role];
+});
+
+// إنشاء حساب طالب
+registerForm.addEventListener('submit', async e => {
+  e.preventDefault(); hideError();
+  const btn = document.getElementById('registerBtn'); btn.disabled = true;
+  const r = await api('/api/auth/register', { method: 'POST', body: {
+    name: registerForm.name.value.trim(),
+    email: registerForm.email.value.trim(),
+    password: registerForm.password.value,
+    phone: registerForm.phone.value.trim(),
+    student_code: registerForm.student_code.value.trim(),
+  }});
+  if (!r.ok) { showError(r.error || 'تعذر إنشاء الحساب'); btn.disabled = false; return; }
+  window.location.href = 'student.html';
+});
+</script>
+</body>
+</html>

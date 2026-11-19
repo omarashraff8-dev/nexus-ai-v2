@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="rtl">
+<head>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted)window.location.reload()})</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة | NEXUS AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,2 95,27 95,73 50,98 5,73 5,27' fill='%230A1B33'/><path d='M32 68 V32 L68 68 V32' stroke='%2338BDF8' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/nexus.css">
+<style>
+.predict-card { background: linear-gradient(135deg,#1A1040,#0A1B33); color:#fff; border:1px solid rgba(167,139,250,.35); }
+.predict-card b { color:#C4B5FD }
+.report-summary { background:var(--navy-900); color:#E7EEF9; border-radius:var(--radius-sm); padding:1rem 1.2rem; font-size:.85rem; white-space:pre-line; line-height:1.9; max-height:340px; overflow-y:auto }
+.modal-grid { grid-template-columns: 1.05fr .95fr; }
+canvas.chart { width:100%; height:230px; display:block }
+.admin-badge { background:#7C3AED; color:#fff; border-radius:6px; font-size:.65rem; padding:.1rem .45rem; font-weight:800 }
+</style>
+</head>
+<body>
+<div class="dash">
+
+  <!-- ════════ SIDEBAR ════════ -->
+  <aside class="sidebar" id="sidebar">
+    <button type="button" class="sidebar-close" aria-label="إغلاق القائمة" title="إغلاق القائمة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <a class="logo" href="index.html" style="text-decoration:none">
+      <svg class="logo-mark" viewBox="0 0 100 100"><polygon points="50,2 95,27 95,73 50,98 5,73 5,27" fill="none" stroke="#38BDF8" stroke-width="6"/><path d="M33 67 V33 L67 67 V33" stroke="#38BDF8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="logo-text">NEXUS<b>AI</b></span>
+    </a>
+    <nav class="side-nav" aria-label="التنقل الرئيسي">
+      <button class="side-link active" data-section="dashboard" data-title="لوحة التحكم"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>لوحة التحكم</button>
+      <button class="side-link" data-section="staff" data-title="الموظفون والصلاحيات"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21c0-3.5 3.5-5.5 7-5.5s7 2 7 5.5M17 8a3 3 0 0 1 0 6M22 21c0-2-1-3.5-3-4.5"/></svg>الموظفون والصلاحيات</button>
+      <button class="side-link" data-section="departments" data-title="الأقسام وأنواع الشكاوى"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>الأقسام وأنواع الشكاوى</button>
+      <button class="side-link" data-section="complaints" data-title="كل الشكاوى"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>كل الشكاوى</button>
+      <button class="side-link" data-section="insights" data-title="التحليلات الذكية"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8.5 11l2 2 3.5-3.5"/></svg>التحليلات الذكية <span class="chip" style="font-size:.55rem;padding:.05rem .4rem;margin:0;background:rgba(167,139,250,.25);color:#C4B5FD;border:none">اسأل</span></button>
+      <button class="side-link" data-section="satisfaction" data-title="رضا الطلاب"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>رضا الطلاب</button>
+      <button class="side-link" data-section="announcements" data-title="الإعلانات الجامعية"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z"/><path d="M11.5 16.5L21 6"/></svg>الإعلانات الجامعية</button>
+      <button class="side-link" data-section="lostfound" data-title="المفقودات والموجودات"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>المفقودات والموجودات</button>
+      <button class="side-link" data-section="reports" data-title="التقارير الذكية"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>التقارير الذكية <span class="chip" style="font-size:.55rem;padding:.05rem .4rem;margin:0;background:rgba(167,139,250,.25);color:#C4B5FD;border:none">AI</span></button>
+      <button class="side-link" data-section="notifs" data-title="الإشعارات"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>الإشعارات<span class="side-badge" id="sideNotifBadge" style="display:none">0</span></button>
+    </nav>
+    <div class="side-user">
+      <div class="avatar" id="userAvatar" style="background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#451A03">م</div>
+      <div style="min-width:0"><div class="name" id="userName">...</div><div class="role" id="userRole">مدير النظام</div></div>
+      <button class="logout-btn" id="logoutBtn" title="تسجيل الخروج" aria-label="تسجيل الخروج"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+    </div>
+  </aside>
+
+  <!-- ════════ MAIN ════════ -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:.7rem">
+        <button class="icon-btn sidebar-toggle" aria-label="القائمة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div><h1 id="topbarTitle">لوحة التحكم</h1><div class="sub">إدارة المعهد — نظرة شاملة على الشكاوى والخدمات</div></div>
+      </div>
+      <div style="position:relative">
+        <button class="icon-btn" id="bellBtn" aria-label="الإشعارات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="badge-dot" id="bellBadge" style="display:none">0</span></button>
+        <div id="notifDropdown" style="display:none;position:absolute;top:calc(100% + 10px);inset-inline-end:0;width:330px;max-width:90vw;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:60;padding:.5rem"></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ═══════ 1) لوحة التحكم ═══════ -->
+      <section class="page-section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="icon" style="background:var(--info-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg></div><div><b id="aTotal">0</b><span>إجمالي الشكاوى</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--warn-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><b id="aOpen">0</b><span>مفتوحة الآن</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--ok-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div><b id="aResolved">0</b><span>تم حلها</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:#F3E8FF"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></div><div><b id="aSatisfaction">—</b><span>رضا الطلاب</span></div></div>
+        </div>
+
+        <div id="urgentBanner" style="display:none;background:var(--danger-bg);border:1px solid #FECACA;color:#991B1B;border-radius:var(--radius-sm);padding:.6rem 1rem;font-size:.85rem;font-weight:800"></div>
+
+        <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:1.2rem" class="admin-charts">
+          <div class="card">
+            <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>الشكاوى لكل قسم</h2></div>
+            <canvas id="deptChart" class="chart" height="230" role="img" aria-label="رسم شريطي: إجمالي الشكاوى لكل قسم"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>الاتجاه الأسبوعي</h2></div>
+            <canvas id="trendChart" class="chart" height="230" role="img" aria-label="خط بياني: حجم الشكاوى عبر الأسابيع"></canvas>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:1.2rem" class="admin-bottom">
+          <div class="card">
+            <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M7 12h10M10 18h4"/></svg>أكثر المشكلات تكرارًا</h2></div>
+            <div id="topTypesList" style="display:grid;gap:.55rem"></div>
+          </div>
+          <div style="display:grid;gap:1.2rem;align-content:start">
+            <div class="card predict-card">
+              <div class="card-title"><h2 style="color:#fff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2 7.6.1-6 4.6 2.3 7.1-6.3-4.3-6.3 4.3 2.3-7.1-6-4.6 7.6-.1z"/></svg>توقع NEXUS AI للأسبوع القادم</h2></div>
+              <div style="font-size:2.6rem;font-weight:900;line-height:1"><span id="aPrediction">0</span> <small style="font-size:.35em;color:#C4B5FD">شكوى متوقعة</small></div>
+              <p style="font-size:.8rem;color:#C4B5FD;margin-top:.4rem" id="aPredictionNote">انحدار خطي على آخر 8 أسابيع من البيانات الحقيقية.</p>
+            </div>
+            <div class="card">
+              <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>متوسط زمن الحل</h2></div>
+              <div style="font-size:1.8rem;font-weight:900;color:var(--navy-800)"><span id="aAvgHours">0</span> <small style="font-size:.5em;color:var(--muted)">ساعة</small></div>
+              <p style="font-size:.75rem;color:var(--muted)">من إنشاء الشكوى حتى إغلاقها — عبر كل الأقسام.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a2 2 0 0 0 2 5h1M17 6h3a2 2 0 0 1-2 5h-1"/></svg>تصنيف أداء الأقسام</h2><span class="chip" style="margin:0;font-size:.65rem">محسوب من بيانات حقيقية</span></div>
+          <div class="table-wrap"><table class="data rank-table"><thead><tr><th>#</th><th>القسم</th><th>الشكاوى</th><th>% الحل</th><th>متوسط زمن الحل</th><th>الرضا</th><th>النتيجة</th></tr></thead><tbody id="deptRankTableBody"><tr><td colspan="7" style="text-align:center;color:var(--muted)">جارِ الحساب...</td></tr></tbody></table></div>
+        </div>
+
+        <button class="card predict-card" data-goto="insights" style="text-align:start;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;border:1px solid rgba(167,139,250,.4)">
+          <div><h2 style="color:#fff;font-size:.95rem;margin-bottom:.2rem">🔮 اسأل الإدارة الذكية سؤالاً مفتوحًا</h2><p style="color:#C4B5FD;font-size:.78rem">«ما أكثر مشكلة هذا الشهر؟» · «هل زادت الشكاوى عن الشهر الماضي؟» — إجابات بأرقام حقيقية + رسوم + توصيات</p></div>
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </section>
+
+      <!-- ═══════ 2) الموظفون والصلاحيات ═══════ -->
+      <section class="page-section" id="section-staff">
+        <div class="card">
+          <div class="toolbar">
+            <h2 style="font-size:1rem;color:var(--navy-800)">إدارة حسابات الموظفين</h2>
+            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+              <select id="usersRoleFilter" style="border:1.5px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.82rem"><option value="staff">الموظفون فقط</option><option value="student">الطلاب</option><option value="admin">المديرون</option><option value="">الجميع</option></select>
+              <button class="btn btn-primary btn-sm" id="addUserBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>إضافة مستخدم</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>القسم</th><th>آخر دخول</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ 3) الأقسام وأنواع الشكاوى ═══════ -->
+      <section class="page-section" id="section-departments">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start" class="admin-two-col">
+          <div class="card">
+            <div class="toolbar"><h2 style="font-size:1rem;color:var(--navy-800)">الأقسام وSLA</h2><button class="btn btn-primary btn-sm" id="addDeptBtn">+ قسم جديد</button></div>
+            <div class="table-wrap"><table class="data"><thead><tr><th>القسم</th><th>SLA</th><th>شكاوى</th><th></th></tr></thead><tbody id="deptTableBody"></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="toolbar"><h2 style="font-size:1rem;color:var(--navy-800)">أنواع الشكاوى</h2><button class="btn btn-primary btn-sm" id="addTypeBtn">+ نوع جديد</button></div>
+            <div class="table-wrap"><table class="data"><thead><tr><th>النوع</th><th>القسم</th><th></th></tr></thead><tbody id="typeTableBody"></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ 4) كل الشكاوى ═══════ -->
+      <section class="page-section" id="section-complaints">
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 9h8M8 13h8"/></svg>كل شكاوى المعهد</h2><span class="chip" style="margin:0" id="adminResultCount">0</span></div>
+          <div class="filters">
+            <input type="search" id="aSearch" placeholder="ابحث برقم / اسم / كلمة..." style="flex:1;min-width:200px" aria-label="بحث">
+            <select id="aDept" aria-label="القسم"><option value="">كل الأقسام</option></select>
+            <select id="aStatus" aria-label="الحالة"><option value="">كل الحالات</option><option value="new">جديدة</option><option value="in_progress">قيد المراجعة</option><option value="resolved">تم الحل</option><option value="rejected">مرفوضة</option></select>
+            <select id="aPriority" aria-label="الأولوية"><option value="">كل الأولويات</option><option value="critical">حرجة</option><option value="urgent">عاجلة</option><option value="high">مرتفعة</option><option value="medium">متوسطة</option><option value="low">منخفضة</option></select>
+            <input type="date" id="aFrom" aria-label="من تاريخ"><input type="date" id="aTo" aria-label="إلى تاريخ">
+            <button class="btn btn-outline btn-sm" id="aClearFilters">مسح</button>
+          </div>
+          <div class="table-wrap"><table class="data"><thead><tr><th>رقم</th><th>الطالب</th><th>العنوان / القسم</th><th>الأولوية</th><th>الحالة</th><th>مسندة إلى</th><th>التاريخ</th><th></th></tr></thead><tbody id="allComplaintsBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- ═══════ 5) التقارير الذكية ═══════ -->
+      <section class="page-section" id="section-reports">
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>الملخص الذكي للإدارة</h2></div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:.6rem">بضغطة زر، NEXUS AI يقرأ كل شكاوى المعهد ويكتب تقريرًا: أبرز المشكلات، الأسباب المتكررة، التوصيات — مبني على أرقام حقيقية 100%.</p>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.7rem">
+            <button class="btn btn-primary" id="generateSummaryBtn">✨ توليد الملخص الذكي الآن</button>
+            <input type="date" id="csvFrom" aria-label="من"><input type="date" id="csvTo" aria-label="إلى">
+            <a class="btn btn-outline" id="exportCsvBtn" href="api/admin/reports.csv">⬇ تصدير CSV</a>
+            <button class="btn btn-outline" id="printReportBtn">🖨 طباعة</button>
+          </div>
+          <div class="report-summary" id="summaryOutput" style="display:none"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5z"/></svg>التقارير المحفوظة</h3></div>
+          <div id="savedReportsList" style="display:grid;gap:.5rem"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ التحليلات الذكية — اسأل الإدارة ═══════ -->
+      <section class="page-section" id="section-insights">
+        <div class="ask-box">
+          <h2 style="color:#fff;font-size:1.05rem;margin-bottom:.15rem">🔮 التحليلات الذكية — اسأل بيانات المعهد</h2>
+          <p style="color:#C4B5FD;font-size:.78rem;margin-bottom:.6rem">كل إجابة تُحسب لحظيًا من قاعدة البيانات — لا أرقام مُخترعة، والرسوم تُرسم تلقائيًا.</p>
+          <form id="askForm" style="display:flex;gap:.5rem">
+            <textarea id="askInput" rows="2" placeholder="مثال: ما أكثر مشكلة واجهت الطلاب هذا الشهر؟" aria-label="سؤالك"></textarea>
+            <button type="submit" class="btn btn-cyan" id="askSubmitBtn" style="align-self:stretch;white-space:nowrap">اسأل ✨</button>
+          </form>
+          <div class="ask-chips" id="askChips">
+            <button class="ask-chip" data-q="ما أكثر مشكلة تواجه الطلاب هذا الشهر؟">ما أكثر مشكلة هذا الشهر؟</button>
+            <button class="ask-chip" data-q="ما القسم الذي يستقبل أكبر عدد من الشكاوى؟">القسم الأعلى استقبالًا؟</button>
+            <button class="ask-chip" data-q="ما متوسط وقت حل الشكاوى؟">متوسط وقت الحل؟</button>
+            <button class="ask-chip" data-q="ما نسبة الشكاوى التي تم حلها؟">نسبة الشكاوى المحلولة؟</button>
+            <button class="ask-chip" data-q="ما نسبة رضا الطلاب؟">رضا الطلاب؟</button>
+            <button class="ask-chip" data-q="ما أكثر الشكاوى تأخيرًا؟">أكثر الشكاوى تأخيرًا؟</button>
+            <button class="ask-chip" data-q="هل زادت الشكاوى مقارنة بالشهر السابق؟">مقارنة بالشهر الماضي؟</button>
+            <button class="ask-chip" data-q="ما توقع الشكاوى للأسبوع القادم؟">توقع الأسبوع القادم؟</button>
+          </div>
+        </div>
+        <div class="card" id="askResultCard" style="display:none">
+          <div class="card-title"><h3><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8 5.8 1.9-5.8 1.9L12 18.4l-1.9-5.8-5.8-1.9 5.8-1.9z"/></svg>إجابة التحليلات الذكية <span id="askGroundedBadge" class="chip" style="margin:0;font-size:.6rem">مبنية على بياناتك الحقيقية ✓</span></h3></div>
+          <div class="ask-answer" id="askAnswer"></div>
+          <div class="ask-stats" id="askStats"></div>
+          <canvas id="askChart" class="chart" height="230" role="img" aria-label="رسم بياني للإجابة" style="margin-top:.6rem;display:none"></canvas>
+          <div class="ask-chips" id="askSuggestions" style="margin-top:.6rem"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ رضا الطلاب ═══════ -->
+      <section class="page-section" id="section-satisfaction">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="icon" style="background:#FEF3C7"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div><b id="satAvg">0</b><span>متوسط التقييم (من 5)</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--ok-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div><b id="satPct">0%</b><span>نسبة رضا الطلاب</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:var(--info-bg)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg></div><div><b id="satTotal">0</b><span>عدد التقييمات</span></div></div>
+          <div class="stat-card"><div class="icon" style="background:#F3E8FF"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg></div><div><b id="satBest" style="font-size:.95rem">—</b><span>الأعلى رضا · <span id="satWorst">—</span> يحتاج تحسين</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:1.2rem" class="admin-two-col">
+          <div class="card"><div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>مقارنة التقييمات بين الأقسام</h2></div><canvas id="satDeptChart" class="chart" height="230" role="img" aria-label="رسم: نسبة الرضا لكل قسم"></canvas></div>
+          <div class="card"><div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>التقييمات الشهرية</h2></div><canvas id="satMonthlyChart" class="chart" height="230" role="img" aria-label="رسم: متوسط التقييم آخر 6 أشهر"></canvas></div>
+        </div>
+        <div class="card"><div class="card-title"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>آخر تعليقات الطلاب</h3></div><div id="satComments" style="display:grid;gap:.5rem"></div></div>
+      </section>
+
+      <!-- ═══════ الإعلانات الجامعية ═══════ -->
+      <section class="page-section" id="section-announcements">
+        <div style="display:grid;grid-template-columns:400px 1fr;gap:1.2rem;align-items:start" class="admin-two-col">
+          <div class="card">
+            <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5-5 18-2.5-7.5L3 11z"/></svg>نشر إعلان جامعي</h2></div>
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">الإعلان يظهر كبانر في الصفحة الرئيسية لكل طالب وموظف، ويرسل إشعارًا للجميع فور النشر.</p>
+            <form id="announcementForm">
+              <div class="field"><label for="annTitle">عنوان الإعلان</label><input id="annTitle" required minlength="4" placeholder="مثال: تأجيل امتحان قواعد البيانات"></div>
+              <div class="field"><label for="annBody">نص الإعلان</label><textarea id="annBody" required minlength="10" rows="4" placeholder="التفاصيل كاملة..."></textarea></div>
+              <button type="submit" class="btn btn-primary btn-block" id="annSubmitBtn">📢 نشر للجميع</button>
+            </form>
+          </div>
+          <div class="card"><div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>الإعلانات المنشورة</h2></div><div id="announcementsList" style="display:grid;gap:.5rem"></div></div>
+        </div>
+      </section>
+
+      <!-- ═══════ المفقودات والموجودات (إدارة) ═══════ -->
+      <section class="page-section" id="section-lostfound">
+        <div class="card">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>المفقودات والموجودات</h2><span class="chip" style="margin:0" id="adminLostCount">0 إعلان</span></div>
+          <div class="filters">
+            <select id="adminLfStatus" aria-label="الحالة"><option value="">كل الحالات</option><option value="open">مفتوح</option><option value="found">تم العثور عليه</option><option value="returned">تم التسليم</option></select>
+            <select id="adminLfType" aria-label="النوع"><option value="">الكل</option><option value="lost">مفقودات</option><option value="found">موجودات</option></select>
+            <input type="search" id="adminLfSearch" placeholder="ابحث..." style="flex:1;min-width:160px">
+          </div>
+          <div id="adminLostList" style="display:grid;gap:.5rem"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ 6) الإشعارات ═══════ -->
+      <section class="page-section" id="section-notifs">
+        <div class="card" style="max-width:760px">
+          <div class="card-title"><h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>الإشعارات</h2><button class="btn btn-outline btn-sm" id="markAllBtn">تعليم الكل كمقروء</button></div>
+          <div id="notifList"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════ مودال إضافة/تعديل مستخدم ══════════ -->
+<div class="modal-overlay" id="userModal" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head"><h3 id="userModalTitle">إضافة مستخدم</h3><button class="icon-btn" id="closeUserModal" aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <form id="userForm">
+        <input type="hidden" id="userId">
+        <div class="field"><label for="uName">الاسم الكامل</label><input id="uName" required placeholder="أ/ منى حسن"></div>
+        <div class="field"><label for="uEmail">البريد</label><input id="uEmail" type="email" required dir="ltr" style="text-align:left" placeholder="staff@nexus.edu"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">
+          <div class="field"><label for="uRole">الدور</label><select id="uRole"><option value="staff">موظف</option><option value="student">طالب</option><option value="admin">مدير</option></select></div>
+          <div class="field"><label for="uDept">القسم <span style="color:var(--muted);font-weight:400">(للموظف)</span></label><select id="uDept"><option value="">— بدون —</option></select></div>
+        </div>
+        <div class="field"><label for="uPassword">كلمة المرور <span style="color:var(--muted);font-weight:400">(اترك فارغة للإبقاء على الحالية)</span></label><input id="uPassword" type="text" placeholder="6 أحرف فأكثر" dir="ltr" style="text-align:left"></div>
+        <div class="field"><label for="uPhone">الموبايل</label><input id="uPhone" type="tel" dir="ltr" style="text-align:left" placeholder="01000000000"></div>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" id="cancelUserModal">إلغاء</button><button type="submit" class="btn btn-primary">حفظ</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ مودال إسناد شكوى ══════════ -->
+<div class="modal-overlay" id="assignModal" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head"><h3>إسناد الشكوى لموظف</h3><button class="icon-btn" id="closeAssignModal" aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <p id="assignComplaintInfo" style="font-size:.85rem;color:var(--muted);margin-bottom:.6rem"></p>
+      <select id="assignStaffSelect" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:.6rem .7rem;font-size:.9rem"></select>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.8rem"><button class="btn btn-outline" id="cancelAssignModal">إلغاء</button><button class="btn btn-primary" id="confirmAssignBtn">إسناد</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ مودال عرض تفاصيل الشكوى (قراءة فقط) ══════════ -->
+<div class="modal-overlay" id="viewModal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle">
+  <div class="modal">
+    <div class="modal-head"><h3 id="viewModalTitle">تفاصيل الشكوى</h3><button class="icon-btn" id="closeViewModal" aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div id="viewHeadInfo" style="margin-bottom:.6rem"></div>
+      <div class="employee-banner" id="adminConfirmBanner" style="display:none;margin-bottom:.6rem">
+        <div><b id="adminConfirmTitle">🔔 اسأل الموظف: هل اتحلت؟</b><p id="adminConfirmText">اطلب من الموظف تأكيد الحل — هيرد من لوحته بنفس الشكوى.</p></div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-cyan btn-sm" id="adminRequestConfirmBtn">📤 طلب تأكيد الحل</button>
+          <span id="adminConfirmState" style="display:none;font-size:.8rem;font-weight:800"></span>
+        </div>
+        <p id="adminConfirmNote" style="display:none;font-size:.8rem;background:rgba(255,255,255,.05);border-radius:8px;padding:.35rem .6rem"></p>
+      </div>
+      <div class="ai-analysis" id="viewAiBox" style="display:none;margin-bottom:.6rem"></div>
+      <p id="viewDetails" style="font-size:.87rem;white-space:pre-line;background:#F8FBFF;border:1px solid var(--line);border-radius:var(--radius-sm);padding:.6rem .8rem;margin-bottom:.6rem"></p>
+      <div id="viewAttachment" style="margin-bottom:.6rem;font-size:.8rem"></div>
+      <h4 style="font-size:.82rem;color:var(--navy-800);margin-bottom:.3rem">المحادثة والسجل</h4>
+      <div class="chat-box" id="viewChat" style="max-height:300px"></div>
+      <ul class="timeline" id="viewTimeline" style="margin-top:.7rem"></ul>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <label for="viewPriority" style="font-size:.75rem;font-weight:800;color:var(--muted)">تعديل الأولوية:</label>
+          <select id="viewPriority" style="border:1.5px solid var(--line);border-radius:8px;padding:.4rem .6rem;font-size:.8rem">
+            <option value="low">منخفضة</option><option value="medium">متوسطة</option><option value="high">مرتفعة</option><option value="urgent">عاجلة</option><option value="critical">حرجة</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" id="viewResetRatingBtn" style="display:none;border-color:#FCA5A5;color:#DC2626">مسح التقييم</button>
+        <button class="btn btn-primary" id="viewAssignBtn">إسناد لموظف</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- منطقة طباعة التقرير -->
+<div id="printReport" class="print-only"><h1>NEXUS AI — تقرير الشكاوى</h1><div id="printReportBody" style="white-space:pre-line"></div></div>
+
+<script src="js/static-backend.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/core.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

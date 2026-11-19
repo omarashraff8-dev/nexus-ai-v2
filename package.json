@@ -1,0 +1,14 @@
+{
+  "name": "nexus-ai-v2",
+  "version": "1.0.0",
+  "description": "NEXUS AI V2 — منصة الجامعة الذكية لإدارة الشكاوى والخدمات (نسخة نظيفة ومنظمة)",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "build:static": "node build-static.js",
+    "serve:docs": "node tests/serve-docs.js",
+    "test": "node --check server/index.js && node --check server/db.js && node --check server/ai.js && node --check web/js/core.js && node --check web/js/sidebar.js && node --check web/js/student.js && node --check web/js/staff.js && node --check web/js/admin.js && node --check web/js/landing.js && node --check web/js/static-backend.js",
+    "test:e2e": "node tests/browser-e2e.js"
+  },
+  "engines": { "node": ">=22.5" }
+}
