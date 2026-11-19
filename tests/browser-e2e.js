@@ -103,7 +103,12 @@ function check(name, cond, extra) {
   const state = () => evaluate(`({open:document.querySelector('.sidebar').classList.contains('open'),active:(document.querySelector('.page-section.active')||{}).id||'',overflow:document.documentElement.scrollWidth>window.innerWidth+1,toggle:getComputedStyle(document.querySelector('.sidebar-toggle')).display,sidebarW:Math.round(document.querySelector('.sidebar').getBoundingClientRect().width),errs:window.__errs||[]})`);
   async function login(email, password) {
     await goto(BASE + '/login.html');
-    await evaluate(`fetch('/api/auth/logout',{method:'POST'})`).catch(() => {});
+    const isStatic = await evaluate('!!window.NEXUS_STATIC').catch(() => false);
+    if (isStatic) {
+      await evaluate('localStorage.clear()'); // الديمو الثابت: جلسة/بيانات المتصفح فقط
+    } else {
+      await evaluate(`fetch('/api/auth/logout',{method:'POST'})`).catch(() => {});
+    }
     await goto(BASE + '/login.html');
     await evaluate(`(()=>{document.getElementById('loginEmail').value=${JSON.stringify(email)};document.getElementById('loginPassword').value=${JSON.stringify(password)};document.getElementById('loginBtn').click();return true;})()`);
     for (let i = 0; i < 100; i++) {
@@ -128,6 +133,7 @@ function check(name, cond, extra) {
     { key: 'admin', email: 'admin@nexus.edu', pass: 'admin123', links: ['dashboard', 'staff', 'departments', 'complaints', 'insights', 'satisfaction', 'announcements', 'lostfound', 'reports', 'notifs'] },
   ];
 
+  if (!process.env.SKIP_TOUCH) {
   console.log('== TRUSTED TOUCH TESTS (390x800, real mobile emulation) ==');
   for (const role of roles) {
     await login(role.email, role.pass);
@@ -161,6 +167,9 @@ function check(name, cond, extra) {
     s = await state();
     check(`${role.key}: route change closes`, !s.open, s);
     check(`${role.key}: no JS errors (touch pass)`, s.errs.length === 0, s.errs);
+  }
+  } else {
+    console.log('== TRUSTED TOUCH TESTS skipped (SKIP_TOUCH=1) ==');
   }
 
   console.log('== FULL LAYOUT SWEEP (all portals, all widths) ==');

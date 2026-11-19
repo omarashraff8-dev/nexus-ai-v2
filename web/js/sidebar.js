@@ -2,7 +2,7 @@
    NEXUS AI V2 — SidebarController
    A SINGLE centralized controller for Student / Staff / Admin.
    Guarantees:
-   - One hamburger control (pointerdown only — no click/touch duplication)
+   - One hamburger control (click only — a single reliable gesture on touch and mouse)
    - Auto-close on any nav item, route change, outside tap, Escape
    - Works on mobile touch (iOS/Android) AND desktop mouse
    - Desktop layout completely untouched (no JS styles on desktop)
